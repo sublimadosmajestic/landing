@@ -84,7 +84,22 @@
     .btn-nav-wa{background:var(--verde-wa);color:var(--blanco);font-size:13px;font-weight:800;padding:9px 18px;border-radius:100px;display:flex;align-items:center;gap:6px;transition:transform .15s,box-shadow .15s}
     .btn-nav-wa:hover{transform:scale(1.04);box-shadow:0 4px 16px rgba(37,211,102,.35)}
     .btn-nav-wa svg{width:16px;height:16px;fill:white;flex-shrink:0}
-    .hero{background:linear-gradient(135deg,#FDF0F5 0%,#FFF5FB 50%,#F5F0FF 100%);padding:0;overflow:hidden}
+    .hero{position:relative;background:linear-gradient(135deg,#FDF0F5 0%,#FFF5FB 50%,#F5F0FF 100%);padding:0;overflow:hidden}
+    /* === LUCES DE NAVIDAD HERO === */
+    .xmas-lights-garland{position:absolute;top:0;left:0;width:100%;margin:0;padding:0;list-style:none;display:flex;justify-content:space-around;pointer-events:none;z-index:15;height:32px;overflow:hidden;border-top:2px solid rgba(40,40,40,0.35)}
+    .xmas-lights-garland::before{content:'';position:absolute;top:-8px;left:0;right:0;height:12px;border-bottom:2px solid rgba(60,60,60,0.2);pointer-events:none}
+    .xmas-light{position:relative;width:10px;height:20px;border-radius:50% 50% 45% 45%;margin:0 4px;animation-iteration-count:infinite;animation-fill-mode:both}
+    .xmas-light::before{content:'';position:absolute;top:-4px;left:2.5px;width:5px;height:4px;background:#2a2a2a;border-radius:2px 2px 0 0}
+    .xmas-light.pink{background:#ff2d88;box-shadow:0 2px 14px 4px rgba(255,45,136,.85);animation:xmasTwinkle1 1.2s ease-in-out infinite alternate}
+    .xmas-light.gold{background:#ffcc00;box-shadow:0 2px 14px 4px rgba(255,204,0,.85);animation:xmasTwinkle2 1.5s ease-in-out infinite alternate .3s}
+    .xmas-light.green{background:#00e676;box-shadow:0 2px 14px 4px rgba(0,230,118,.85);animation:xmasTwinkle3 1.3s ease-in-out infinite alternate .6s}
+    .xmas-light.white{background:#ffffff;box-shadow:0 2px 14px 4px rgba(255,255,255,.9);animation:xmasTwinkle1 1.7s ease-in-out infinite alternate .2s}
+    .xmas-light.cyan{background:#00e5ff;box-shadow:0 2px 14px 4px rgba(0,229,255,.85);animation:xmasTwinkle2 1.4s ease-in-out infinite alternate .5s}
+    @keyframes xmasTwinkle1{0%{opacity:.35;filter:brightness(.7)}100%{opacity:1;filter:brightness(1.35)}}
+    @keyframes xmasTwinkle2{0%{opacity:1;filter:brightness(1.3)}100%{opacity:.3;filter:brightness(.65)}}
+    @keyframes xmasTwinkle3{0%{opacity:.45;filter:brightness(.8)}50%{opacity:1;filter:brightness(1.4)}100%{opacity:.5;filter:brightness(.85)}}
+    /* === BADGE NAVIDEÃ‘O === */
+    .xmas-badge{position:absolute;top:14px;left:14px;background:linear-gradient(135deg,#E8177A 0%,#B8105E 100%);color:#fff;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:6px 14px;border-radius:100px;box-shadow:0 4px 14px rgba(232,23,122,.45);z-index:5;display:inline-flex;align-items:center;gap:5px;border:1px solid rgba(255,255,255,.4)}
     .hero-inner{max-width:1140px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;align-items:center;min-height:88vh;gap:0}
     .hero-content{padding:48px 48px 48px 32px}
     .hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(232,23,122,.1);border:1px solid rgba(232,23,122,.25);color:var(--rosa-dark);font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:5px 12px;border-radius:100px;margin-bottom:20px}
