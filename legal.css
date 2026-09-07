@@ -52,7 +52,7 @@ body {
 }
 .legal-nav-logo img {
   width: 40px; height: 40px; border-radius: 50%;
-  object-fit: cover;
+  object-fit: contain;
   box-shadow: 0 2px 8px rgba(232,23,122,.2);
 }
 .legal-nav-brand {
@@ -301,7 +301,7 @@ body {
   align-items: center; gap: 16px; text-align: center;
 }
 .legal-footer-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-.legal-footer-logo img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; opacity: .85; }
+.legal-footer-logo img { width: 36px; height: 36px; border-radius: 50%; object-fit: contain; opacity: .95; background: #fff; padding: 2px; }
 .legal-footer-logo span {
   font-family: var(--font-title); font-size: 1rem;
   font-weight: 700; color: rgba(255,255,255,.8);
