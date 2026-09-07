@@ -258,6 +258,135 @@
     @media(max-width:960px){.footer-inner{grid-template-columns:1fr 1fr}.why-grid{grid-template-columns:1fr}}
     @media(max-width:768px){.hero-inner{grid-template-columns:1fr;min-height:auto}.hero-content{padding:28px 20px;order:2}.hero-visual{order:1;min-height:auto;padding:20px 16px 8px}.hero-banner-wrapper{max-width:100%;border-radius:18px;box-shadow:0 10px 30px rgba(232,23,122,0.2)}.hero-banner-img{max-height:520px;border-radius:14px}.navbar-brand-text small{display:none}}
     @media(max-width:480px){.footer-inner{grid-template-columns:1fr}.proof-bar-inner{justify-content:center}}
+    /* â•â• NAVIDAD: LUCES Y EFECTOS FESTIVOS â•â• */
+    .xmas-lights-garland {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-around;
+      list-style: none;
+      margin: 0;
+      padding: 0 10px;
+      z-index: 15;
+      pointer-events: none;
+      overflow: hidden;
+      height: 38px;
+    }
+    .xmas-lights-garland::before {
+      content: '';
+      position: absolute;
+      top: 6px;
+      left: -10px;
+      right: -10px;
+      height: 14px;
+      border-top: 2px solid #285422;
+      border-radius: 50%;
+      z-index: 1;
+    }
+    .xmas-light {
+      position: relative;
+      width: 13px;
+      height: 20px;
+      border-radius: 50% 50% 45% 45%;
+      margin: 6px 3px 0;
+      z-index: 2;
+      animation-duration: 1.8s;
+      animation-fill-mode: both;
+      animation-iteration-count: infinite;
+      animation-timing-function: ease-in-out;
+      transform-origin: top center;
+    }
+    .xmas-light::before {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: 3.5px;
+      width: 6px;
+      height: 5px;
+      background: #173812;
+      border-radius: 2px;
+    }
+    .xmas-light.pink {
+      background: #FF1E8A;
+      box-shadow: 0 4px 16px #FF1E8A, 0 0 10px #FF5BAE;
+      animation-name: glowPink, swingLight;
+    }
+    .xmas-light.gold {
+      background: #FFD700;
+      box-shadow: 0 4px 18px #FFD700, 0 0 10px #FFF078;
+      animation-name: glowGold, swingLight;
+      animation-delay: 0.45s;
+    }
+    .xmas-light.green {
+      background: #00E676;
+      box-shadow: 0 4px 18px #00E676, 0 0 10px #69F0AE;
+      animation-name: glowGreen, swingLight;
+      animation-delay: 0.9s;
+    }
+    .xmas-light.cyan {
+      background: #00E5FF;
+      box-shadow: 0 4px 18px #00E5FF, 0 0 10px #84FFFF;
+      animation-name: glowCyan, swingLight;
+      animation-delay: 1.35s;
+    }
+    .xmas-light.white {
+      background: #FFFFFF;
+      box-shadow: 0 4px 20px #FFFFFF, 0 0 12px #FFBEE3;
+      animation-name: glowWhite, swingLight;
+      animation-delay: 0.65s;
+    }
+    @keyframes glowPink { 0%,100%{opacity:1;filter:brightness(1.25) drop-shadow(0 0 8px #FF1E8A)} 50%{opacity:0.35;filter:brightness(0.65)} }
+    @keyframes glowGold { 0%,100%{opacity:1;filter:brightness(1.35) drop-shadow(0 0 8px #FFD700)} 50%{opacity:0.3;filter:brightness(0.6)} }
+    @keyframes glowGreen { 0%,100%{opacity:1;filter:brightness(1.3) drop-shadow(0 0 8px #00E676)} 50%{opacity:0.35;filter:brightness(0.65)} }
+    @keyframes glowCyan { 0%,100%{opacity:1;filter:brightness(1.35) drop-shadow(0 0 8px #00E5FF)} 50%{opacity:0.3;filter:brightness(0.6)} }
+    @keyframes glowWhite { 0%,100%{opacity:1;filter:brightness(1.4) drop-shadow(0 0 10px #FFFFFF)} 50%{opacity:0.45;filter:brightness(0.75)} }
+    @keyframes swingLight { 0%,100%{transform:rotate(-4deg)} 50%{transform:rotate(4deg)} }
+
+    /* Borde festivo iluminado y badge navideÃ±o para el banner */
+    .hero-banner-wrapper {
+      position: relative;
+      box-shadow: 0 18px 50px rgba(232,23,122,0.28), 0 0 24px rgba(255,215,0,0.22), 0 4px 16px rgba(0,0,0,0.08) !important;
+    }
+    .hero-banner-wrapper::before {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 26px;
+      background: linear-gradient(135deg, rgba(255,215,0,0.5), rgba(232,23,122,0.6), rgba(0,230,118,0.4), rgba(0,229,255,0.5));
+      z-index: -1;
+      opacity: 0.85;
+      animation: borderGlow 4s linear infinite;
+    }
+    @keyframes borderGlow {
+      0%,100%{filter:blur(4px) brightness(1)}
+      50%{filter:blur(8px) brightness(1.3)}
+    }
+    .xmas-badge {
+      position: absolute;
+      top: -12px;
+      right: 18px;
+      background: linear-gradient(135deg, #B8105E 0%, #E8177A 50%, #FF1E8A 100%);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 100px;
+      box-shadow: 0 6px 20px rgba(232, 23, 122, 0.45), 0 0 14px rgba(255, 215, 0, 0.6);
+      border: 2px solid #FFD700;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      animation: pulseXmas 2.4s infinite ease-in-out;
+    }
+    @keyframes pulseXmas {
+      0%,100%{transform:scale(1)}
+      50%{transform:scale(1.06);box-shadow:0 8px 24px rgba(232,23,122,0.6), 0 0 20px rgba(255,215,0,0.85)}
+    }
   </style>
 </head>
 <body>
@@ -307,6 +436,31 @@
 </div>
 
 <section class="hero" id="inicio">
+  <!-- â•â• GUIRNALDA DE LUCES NAVIDEÃ‘AS â•â• -->
+  <ul class="xmas-lights-garland" aria-hidden="true">
+    <li class="xmas-light gold"></li>
+    <li class="xmas-light pink"></li>
+    <li class="xmas-light green"></li>
+    <li class="xmas-light white"></li>
+    <li class="xmas-light cyan"></li>
+    <li class="xmas-light gold"></li>
+    <li class="xmas-light pink"></li>
+    <li class="xmas-light green"></li>
+    <li class="xmas-light white"></li>
+    <li class="xmas-light cyan"></li>
+    <li class="xmas-light gold"></li>
+    <li class="xmas-light pink"></li>
+    <li class="xmas-light green"></li>
+    <li class="xmas-light white"></li>
+    <li class="xmas-light cyan"></li>
+    <li class="xmas-light gold"></li>
+    <li class="xmas-light pink"></li>
+    <li class="xmas-light green"></li>
+    <li class="xmas-light white"></li>
+    <li class="xmas-light cyan"></li>
+    <li class="xmas-light gold"></li>
+    <li class="xmas-light pink"></li>
+  </ul>
   <div class="hero-inner">
         <div class="hero-content">
       <div class="hero-badge">
@@ -338,6 +492,7 @@
     </div>
     <div class="hero-visual">
       <div class="hero-banner-wrapper">
+        <span class="xmas-badge">&#127876; Especial Navidad &#10024;</span>
         <img src="header-banner.png" alt="Sublimados Majestic - Distribuye pijamas fabricadas por nosotros" class="hero-banner-img" fetchpriority="high">
       </div>
     </div>
@@ -694,6 +849,111 @@
       if(el){ e.preventDefault(); el.scrollIntoView({behavior:'smooth',block:'start'}); }
     });
   });
+</script>
+<!-- â•â• CANVAS DE NIEVE DESENFOCADA REALISTA (BOKEH 3D) â•â• -->
+<canvas id="snow-bokeh-canvas" aria-hidden="true" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;"></canvas>
+<script>
+(function() {
+  const canvas = document.getElementById('snow-bokeh-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let width = canvas.width = window.innerWidth;
+  let height = canvas.height = window.innerHeight;
+
+  window.addEventListener('resize', () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  });
+
+  // Generate 3D layers of snowflakes with realistic bokeh depth of field
+  const particleCount = width < 768 ? 42 : 72;
+  const particles = [];
+
+  for (let i = 0; i < particleCount; i++) {
+    const layer = Math.random(); // 0 to 1 depth
+    let radius, speedY, opacity, blur;
+
+    if (layer > 0.75) {
+      // Foreground: Grandes, desenfocadas (Bokeh cercano)
+      radius = Math.random() * 9 + 8;
+      speedY = Math.random() * 1.0 + 0.7;
+      opacity = Math.random() * 0.22 + 0.12;
+      blur = true;
+    } else if (layer > 0.35) {
+      // Midground: TamaÃ±o medio, suaves
+      radius = Math.random() * 4 + 3;
+      speedY = Math.random() * 0.8 + 0.5;
+      opacity = Math.random() * 0.45 + 0.3;
+      blur = false;
+    } else {
+      // Background: PequeÃ±as, brillantes, cayendo suavemente
+      radius = Math.random() * 2 + 1.2;
+      speedY = Math.random() * 0.5 + 0.3;
+      opacity = Math.random() * 0.65 + 0.35;
+      blur = false;
+    }
+
+    particles.push({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      radius: radius,
+      speedY: speedY,
+      opacity: opacity,
+      swing: Math.random() * Math.PI * 2,
+      swingSpeed: Math.random() * 0.02 + 0.01,
+      swingAmplitude: Math.random() * 1.4 + 0.6,
+      blur: blur
+    });
+  }
+
+  let isVisible = true;
+  document.addEventListener('visibilitychange', () => {
+    isVisible = !document.hidden;
+    if (isVisible) requestAnimationFrame(render);
+  });
+
+  function render() {
+    if (!isVisible) return;
+    ctx.clearRect(0, 0, width, height);
+
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      p.y += p.speedY;
+      p.swing += p.swingSpeed;
+      p.x += Math.sin(p.swing) * p.swingAmplitude;
+
+      // Wrap around
+      if (p.y > height + p.radius * 2) {
+        p.y = -p.radius * 2;
+        p.x = Math.random() * width;
+      }
+      if (p.x > width + p.radius * 2) p.x = -p.radius * 2;
+      if (p.x < -p.radius * 2) p.x = width + p.radius * 2;
+
+      // Draw realistic soft bokeh snowflake
+      const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
+      if (p.blur) {
+        grad.addColorStop(0, `rgba(255, 255, 255, ${p.opacity})`);
+        grad.addColorStop(0.4, `rgba(255, 240, 248, ${p.opacity * 0.6})`);
+        grad.addColorStop(0.8, `rgba(255, 230, 245, ${p.opacity * 0.2})`);
+        grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      } else {
+        grad.addColorStop(0, `rgba(255, 255, 255, ${p.opacity})`);
+        grad.addColorStop(0.65, `rgba(255, 245, 250, ${p.opacity * 0.7})`);
+        grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      }
+
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    requestAnimationFrame(render);
+  }
+
+  requestAnimationFrame(render);
+})();
 </script>
 </body>
 </html>
