@@ -387,9 +387,292 @@
       0%,100%{transform:scale(1)}
       50%{transform:scale(1.06);box-shadow:0 8px 24px rgba(232,23,122,0.6), 0 0 20px rgba(255,215,0,0.85)}
     }
+    /* â•â• SANTA CLAUS FLYING INTRO ANIMATION â•â• */
+    .santa-overlay {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 100000;
+      background: radial-gradient(ellipse at 50% 35%, #220a20 0%, #0e040f 55%, #050106 100%);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.85s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.85s;
+    }
+    .santa-overlay.fade-out {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .santa-sky {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .santa-moon {
+      position: absolute;
+      top: 8%;
+      right: 12%;
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #FFFDF2 0%, #FFF2A6 60%, rgba(255, 242, 166, 0) 75%);
+      box-shadow: 0 0 50px rgba(255, 242, 166, 0.5), 0 0 100px rgba(232, 23, 122, 0.3);
+      opacity: 0.95;
+    }
+    .santa-flight-group {
+      position: absolute;
+      top: 36%;
+      left: 0;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: santaFlyCinematic 4.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      pointer-events: none;
+    }
+    .santa-sleigh-vehicle {
+      width: 520px;
+      max-width: 90vw;
+      filter: drop-shadow(0 12px 28px rgba(255, 215, 0, 0.55)) drop-shadow(0 0 16px rgba(232, 23, 122, 0.4));
+    }
+    .santa-greeting {
+      margin-top: 12px;
+      background: rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(12px);
+      border: 1.5px solid rgba(255, 215, 0, 0.6);
+      padding: 10px 28px;
+      border-radius: 100px;
+      color: #ffffff;
+      font-family: var(--font-title);
+      font-size: clamp(15px, 2.8vw, 24px);
+      font-weight: 800;
+      letter-spacing: .03em;
+      box-shadow: 0 6px 28px rgba(232, 23, 122, 0.5), 0 0 16px rgba(255, 215, 0, 0.3);
+      animation: greetingFade 4.2s ease forwards;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+    .santa-skip-btn {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      background: rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 10px 22px;
+      border-radius: 100px;
+      cursor: pointer;
+      z-index: 100010;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+      transition: background .2s, transform .2s, border-color .2s;
+    }
+    .santa-skip-btn:hover {
+      background: var(--rosa);
+      border-color: #FFD700;
+      transform: scale(1.05);
+    }
+    @keyframes santaFlyCinematic {
+      0% {
+        transform: translate(-100vw, 28vh) scale(0.35) rotate(16deg);
+        opacity: 0;
+      }
+      12% {
+        opacity: 1;
+      }
+      40% {
+        transform: translate(-12vw, 6vh) scale(0.85) rotate(-3deg);
+      }
+      62% {
+        transform: translate(14vw, -4vh) scale(1.32) rotate(4deg);
+      }
+      82% {
+        transform: translate(52vw, -24vh) scale(1.0) rotate(-10deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(110vw, -58vh) scale(0.38) rotate(-18deg);
+        opacity: 0;
+      }
+    }
+    @keyframes greetingFade {
+      0%,15% { opacity: 0; transform: translateY(14px); }
+      32%,78% { opacity: 1; transform: translateY(0); }
+      92%,100% { opacity: 0; transform: translateY(-12px); }
+    }
   </style>
 </head>
 <body>
+<!-- INTRO ANIMADO DE SANTA CLAUS -->
+<div id="santa-intro-overlay" class="santa-overlay" aria-label="Bienvenida NavideÃ±a Sublimados Majestic">
+  <div class="santa-sky">
+    <div class="santa-moon"></div>
+    <canvas id="santa-stardust-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;"></canvas>
+    
+    <div class="santa-flight-group">
+      <div class="santa-sleigh-vehicle">
+        <svg viewBox="0 0 760 220" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;overflow:visible;">
+          <!-- FILTERS & GLOWS -->
+          <defs>
+            <filter id="rudolphGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+            <filter id="goldGlow" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+            <linearGradient id="sleighBody" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#FF1E8A" />
+              <stop offset="50%" stop-color="#D80F6E" />
+              <stop offset="100%" stop-color="#8A0644" />
+            </linearGradient>
+            <linearGradient id="goldTrim" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#FFF078" />
+              <stop offset="50%" stop-color="#FFD700" />
+              <stop offset="100%" stop-color="#CCA300" />
+            </linearGradient>
+            <linearGradient id="deerShade" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#8D5524" />
+              <stop offset="100%" stop-color="#56300E" />
+            </linearGradient>
+          </defs>
+
+          <!-- MAGICAL GOLDEN REINS (RIENDAS DE ORO) -->
+          <path d="M195 125 C 290 95, 380 90, 485 110" stroke="url(#goldTrim)" stroke-width="2.5" stroke-dasharray="6 3" filter="url(#goldGlow)" opacity="0.9" />
+          <path d="M350 115 C 410 100, 460 105, 485 118" stroke="url(#goldTrim)" stroke-width="2" stroke-dasharray="4 2" filter="url(#goldGlow)" opacity="0.8" />
+
+          <!-- REINDEER 1 (LEAD: RUDOLPH) -->
+          <g id="reindeer-rudolph" transform="translate(48, 40)">
+            <!-- Antlers -->
+            <path d="M85 45 Q 98 22 110 12 M98 25 Q 92 15 90 8 M102 18 Q 112 16 120 18" stroke="url(#goldTrim)" stroke-width="3" stroke-linecap="round" fill="none" filter="url(#goldGlow)" />
+            <path d="M82 48 Q 72 25 78 12 M76 22 Q 68 18 64 22" stroke="url(#goldTrim)" stroke-width="2.5" stroke-linecap="round" fill="none" />
+            <!-- Head & Neck -->
+            <path d="M60 70 L75 52 Q 88 45 100 55 L88 78 Q 78 88 68 98 Z" fill="url(#deerShade)" />
+            <circle cx="86" cy="56" r="2.5" fill="#111" />
+            <!-- Glowing Red Nose (Rudolph!) -->
+            <circle cx="104" cy="58" r="6.5" fill="#FF0033" filter="url(#rudolphGlow)" />
+            <circle cx="104" cy="58" r="3" fill="#FFF" opacity="0.8" />
+            <!-- Body -->
+            <ellipse cx="48" cy="100" rx="36" ry="18" fill="url(#deerShade)" transform="rotate(-15 48 100)" />
+            <!-- Legs (Leaping motion) -->
+            <path d="M65 108 Q 85 130 108 145 M68 114 Q 80 138 98 155" stroke="url(#deerShade)" stroke-width="5" stroke-linecap="round" fill="none" />
+            <path d="M28 108 Q 12 135 2 155 M38 110 Q 22 138 15 160" stroke="url(#deerShade)" stroke-width="4.5" stroke-linecap="round" fill="none" />
+            <!-- Golden Harness & Jingle Bells -->
+            <path d="M42 90 Q 56 102 68 96" stroke="url(#goldTrim)" stroke-width="4" fill="none" />
+            <circle cx="50" cy="98" r="3" fill="#FFD700" filter="url(#goldGlow)" />
+            <circle cx="60" cy="98" r="3" fill="#FFD700" filter="url(#goldGlow)" />
+          </g>
+
+          <!-- REINDEER 2 (SECOND) -->
+          <g id="reindeer-second" transform="translate(205, 55)">
+            <!-- Antlers -->
+            <path d="M85 45 Q 98 22 110 12 M98 25 Q 92 15 90 8 M102 18 Q 112 16 120 18" stroke="url(#goldTrim)" stroke-width="3" stroke-linecap="round" fill="none" filter="url(#goldGlow)" />
+            <!-- Head & Body -->
+            <path d="M60 70 L75 52 Q 88 45 100 55 L88 78 Q 78 88 68 98 Z" fill="url(#deerShade)" />
+            <circle cx="86" cy="56" r="2.5" fill="#111" />
+            <circle cx="102" cy="58" r="3.5" fill="#331A05" />
+            <ellipse cx="48" cy="100" rx="36" ry="18" fill="url(#deerShade)" transform="rotate(-15 48 100)" />
+            <!-- Legs -->
+            <path d="M65 108 Q 85 130 108 145 M68 114 Q 80 138 98 155" stroke="url(#deerShade)" stroke-width="5" stroke-linecap="round" fill="none" />
+            <path d="M28 108 Q 12 135 2 155 M38 110 Q 22 138 15 160" stroke="url(#deerShade)" stroke-width="4.5" stroke-linecap="round" fill="none" />
+            <!-- Harness -->
+            <path d="M42 90 Q 56 102 68 96" stroke="url(#goldTrim)" stroke-width="4" fill="none" />
+            <circle cx="50" cy="98" r="3" fill="#FFD700" filter="url(#goldGlow)" />
+            <circle cx="60" cy="98" r="3" fill="#FFD700" filter="url(#goldGlow)" />
+          </g>
+
+          <!-- SLEIGH & SANTA CLAUS -->
+          <g id="santa-and-sleigh" transform="translate(380, 20)">
+            <!-- Sleigh Runners (Trineo Skis) -->
+            <path d="M20 170 Q 140 178 240 170 Q 275 168 285 145 Q 290 135 278 135 Q 268 135 268 145 Q 255 160 215 160 L 40 160 Q 25 160 18 170 Z" fill="url(#goldTrim)" filter="url(#goldGlow)" />
+            <path d="M60 160 L 75 140 M 180 160 L 170 140 M 230 160 L 220 140" stroke="url(#goldTrim)" stroke-width="4" stroke-linecap="round" />
+
+            <!-- Bag of Gifts & Majestic Pajamas (Saco Lleno de Regalos y Pijamas) -->
+            <path d="M35 142 Q 22 65 85 58 Q 135 52 145 98 Q 150 138 110 146 Z" fill="#1B5E20" />
+            <path d="M45 80 Q 80 95 125 75" stroke="#FFD700" stroke-width="3.5" fill="none" />
+            
+            <!-- Hanging Pajamas from Sleigh Sack (Pijamas Colgando del Saco) -->
+            <!-- Cute Pink Batola Pajama -->
+            <g transform="translate(25, 68) rotate(-18) scale(0.65)">
+              <path d="M12 18 L24 18 L30 45 L6 45 Z" fill="#FF1E8A" />
+              <path d="M15 8 L15 18 M21 8 L21 18" stroke="#FFF" stroke-width="2" />
+              <circle cx="18" cy="30" r="4" fill="#FFF" />
+              <path d="M4 45 Q 18 52 32 45" stroke="#FFD700" stroke-width="2" fill="none" />
+            </g>
+            <!-- Cute Blue Capri Pajama Top -->
+            <g transform="translate(95, 52) rotate(15) scale(0.65)">
+              <path d="M10 10 L28 10 L34 20 L28 24 L28 36 L10 36 L10 24 L4 20 Z" fill="#00BFFF" />
+              <circle cx="19" cy="22" r="3" fill="#FFD700" />
+            </g>
+            <!-- Cute Purple Short Lolita -->
+            <g transform="translate(68, 38) rotate(5) scale(0.6)">
+              <path d="M8 12 L28 12 L26 28 L20 28 L18 20 L16 28 L10 28 Z" fill="#8A2BE2" />
+              <path d="M7 28 Q 18 34 29 28" stroke="#FF69B4" stroke-width="2" fill="none" />
+            </g>
+
+            <!-- Gift boxes overflowing -->
+            <rect x="52" y="42" width="28" height="24" rx="3" fill="#E8177A" transform="rotate(-12 52 42)" filter="url(#goldGlow)" />
+            <path d="M66 39 L66 63 M49 51 L77 51" stroke="#FFD700" stroke-width="2.5" />
+            <rect x="86" y="36" width="26" height="26" rx="3" fill="#00E5FF" transform="rotate(10 86 36)" filter="url(#goldGlow)" />
+            <path d="M99 34 L99 60 M84 47 L110 47" stroke="#FFF" stroke-width="2.5" />
+            <rect x="40" y="58" width="22" height="22" rx="3" fill="#FFD700" transform="rotate(-25 40 58)" />
+            <path d="M51 56 L51 78 M38 67 L60 67" stroke="#E8177A" stroke-width="2" />
+
+            <!-- Sleigh Main Body -->
+            <path d="M55 142 Q 60 100 115 105 L 185 105 Q 225 105 240 125 Q 255 145 220 148 L 75 148 Q 58 148 55 142 Z" fill="url(#sleighBody)" />
+            <!-- Sleigh Golden Trim & Swirl -->
+            <path d="M50 140 Q 60 92 120 98 L 190 98 Q 240 98 255 125 Q 265 145 235 150 L 70 150 Q 48 150 50 140 Z" stroke="url(#goldTrim)" stroke-width="4" fill="none" filter="url(#goldGlow)" />
+
+            <!-- SANTA CLAUS -->
+            <!-- Santa Body -->
+            <path d="M130 115 Q 145 75 175 75 Q 205 75 210 115 Z" fill="#E8177A" />
+            <!-- Black Belt & Gold Buckle -->
+            <path d="M138 108 Q 170 112 205 108" stroke="#111" stroke-width="7" fill="none" />
+            <rect x="166" y="103" width="14" height="10" rx="2" fill="#FFD700" stroke="#CCA300" stroke-width="1.5" />
+            <!-- Santa Beard & Face -->
+            <circle cx="178" cy="62" r="14" fill="#FFDFC4" />
+            <!-- Beard -->
+            <path d="M165 62 Q 178 95 192 62 Q 200 78 185 88 Q 170 94 160 82 Z" fill="#FFFFFF" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.2))" />
+            <!-- Cheeks & Eyes -->
+            <circle cx="175" cy="58" r="2" fill="#111" />
+            <circle cx="184" cy="58" r="2" fill="#111" />
+            <circle cx="171" cy="64" r="3.5" fill="#FF85A2" opacity="0.7" />
+            <circle cx="188" cy="64" r="3.5" fill="#FF85A2" opacity="0.7" />
+            <circle cx="180" cy="63" r="3" fill="#FF5252" />
+            <!-- Santa Hat -->
+            <path d="M164 54 Q 178 30 205 32 Q 218 34 220 48" stroke="#E8177A" stroke-width="14" stroke-linecap="round" fill="none" />
+            <ellipse cx="178" cy="52" rx="16" ry="5" fill="#FFFFFF" />
+            <circle cx="224" cy="50" r="7" fill="#FFFFFF" filter="url(#goldGlow)" />
+            <!-- Waving Hand with Mitten -->
+            <path d="M195 85 Q 215 65 225 48" stroke="#E8177A" stroke-width="9" stroke-linecap="round" fill="none" />
+            <circle cx="227" cy="45" r="7.5" fill="#FFFFFF" />
+            <circle cx="230" cy="42" r="6" fill="#E8177A" />
+          </g>
+        </svg>
+      </div>
+
+      <div class="santa-greeting">
+        <span>ðŸŽ„ Â¡Feliz Navidad de Sublimados Majestic! âœ¨</span>
+      </div>
+    </div>
+
+    <button id="skip-santa-btn" class="santa-skip-btn" aria-label="Entrar a la tienda">
+      Entrar a la tienda &times;
+    </button>
+  </div>
+</div>
 
 <div class="ticker-bar" role="marquee">
   <div class="ticker-inner">
@@ -834,6 +1117,7 @@
 </div>
 
 <script>
+  // FAQ Accordion
   document.querySelectorAll('.faq-q').forEach(btn => {
     btn.addEventListener('click', () => {
       const item = btn.parentElement;
@@ -842,6 +1126,8 @@
       if(!isOpen) item.classList.add('open');
     });
   });
+
+  // Smooth Anchor Navigation
   document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', e => {
       const id = a.getAttribute('href').slice(1);
@@ -850,109 +1136,347 @@
     });
   });
 </script>
-<!-- â•â• CANVAS DE NIEVE DESENFOCADA REALISTA (BOKEH 3D) â•â• -->
+
+<!-- CANVAS DE NIEVE REALISTA -->
 <canvas id="snow-bokeh-canvas" aria-hidden="true" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;"></canvas>
+
+<!-- SCRIPT DE SANTA CLAUS Y PIJAMAS -->
 <script>
 (function() {
-  const canvas = document.getElementById('snow-bokeh-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  let width = canvas.width = window.innerWidth;
-  let height = canvas.height = window.innerHeight;
+  // 1. SANTA INTRO CONTROLLER & FALLING PAJAMAS
+  const overlay = document.getElementById('santa-intro-overlay');
+  const skipBtn = document.getElementById('skip-santa-btn');
+  const stardustCanvas = document.getElementById('santa-stardust-canvas');
 
-  window.addEventListener('resize', () => {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-  });
-
-  // Generate 3D layers of snowflakes with realistic bokeh depth of field
-  const particleCount = width < 768 ? 42 : 72;
-  const particles = [];
-
-  for (let i = 0; i < particleCount; i++) {
-    const layer = Math.random(); // 0 to 1 depth
-    let radius, speedY, opacity, blur;
-
-    if (layer > 0.75) {
-      // Foreground: Grandes, desenfocadas (Bokeh cercano)
-      radius = Math.random() * 9 + 8;
-      speedY = Math.random() * 1.0 + 0.7;
-      opacity = Math.random() * 0.22 + 0.12;
-      blur = true;
-    } else if (layer > 0.35) {
-      // Midground: TamaÃ±o medio, suaves
-      radius = Math.random() * 4 + 3;
-      speedY = Math.random() * 0.8 + 0.5;
-      opacity = Math.random() * 0.45 + 0.3;
-      blur = false;
-    } else {
-      // Background: PequeÃ±as, brillantes, cayendo suavemente
-      radius = Math.random() * 2 + 1.2;
-      speedY = Math.random() * 0.5 + 0.3;
-      opacity = Math.random() * 0.65 + 0.35;
-      blur = false;
+  if (overlay) {
+    function dismissSanta() {
+      overlay.classList.add('fade-out');
+      setTimeout(() => {
+        overlay.style.display = 'none';
+      }, 900);
     }
 
-    particles.push({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      radius: radius,
-      speedY: speedY,
-      opacity: opacity,
-      swing: Math.random() * Math.PI * 2,
-      swingSpeed: Math.random() * 0.02 + 0.01,
-      swingAmplitude: Math.random() * 1.4 + 0.6,
-      blur: blur
+    if (skipBtn) {
+      skipBtn.addEventListener('click', dismissSanta);
+    }
+
+    // Auto dismiss after animation finishes (approx 4.6s)
+    setTimeout(dismissSanta, 4600);
+
+    if (stardustCanvas) {
+      const sCtx = stardustCanvas.getContext('2d');
+      let sW = stardustCanvas.width = window.innerWidth;
+      let sH = stardustCanvas.height = window.innerHeight;
+
+      window.addEventListener('resize', () => {
+        sW = stardustCanvas.width = window.innerWidth;
+        sH = stardustCanvas.height = window.innerHeight;
+      });
+
+      const sparks = [];
+      const fallingPajamas = [];
+      const colors = ['#FFD700', '#FF1E8A', '#FFF078', '#00E5FF', '#FFFFFF', '#FFBEE3', '#00E676'];
+      const pijamaTypes = ['batola', 'short_lolita', 'top_capri', 'gift_box', 'pijama_set'];
+
+      let animTime = 0;
+      let lastPijamaTime = 0;
+
+      function getSantaPos(progress) {
+        const santaX = (progress * 1.9 - 0.45) * sW;
+        const santaY = (0.44 + Math.sin(progress * Math.PI * 1.45) * 0.22 - progress * 0.42) * sH;
+        return { x: santaX, y: santaY };
+      }
+
+      function spawnParticles() {
+        if (animTime > 4.4) return;
+        const progress = animTime / 4.4;
+        const pos = getSantaPos(progress);
+
+        // 1. Stardust Glitter Trail
+        for (let i = 0; i < 5; i++) {
+          sparks.push({
+            x: pos.x - 30 + (Math.random() * 40 - 20),
+            y: pos.y + 15 + (Math.random() * 30 - 15),
+            vx: (Math.random() - 0.75) * 2.5 - 1.5,
+            vy: Math.random() * 2.2 - 0.5,
+            radius: Math.random() * 4.5 + 1.5,
+            alpha: 1,
+            color: colors[Math.floor(Math.random() * colors.length)]
+          });
+        }
+
+        // 2. Drop Floating Festive Pajamas behind Santa's Sleigh!
+        if (animTime - lastPijamaTime > 0.28 && progress > 0.12 && progress < 0.9) {
+          lastPijamaTime = animTime;
+          const pType = pijamaTypes[Math.floor(Math.random() * pijamaTypes.length)];
+          fallingPajamas.push({
+            x: pos.x - 45,
+            y: pos.y + 15,
+            type: pType,
+            vx: (Math.random() - 0.6) * 1.6 - 0.8,
+            vy: Math.random() * 1.8 + 1.2,
+            rotation: Math.random() * Math.PI * 2,
+            rotSpeed: (Math.random() - 0.5) * 0.07,
+            sway: Math.random() * Math.PI * 2,
+            swaySpeed: Math.random() * 0.045 + 0.02,
+            scale: Math.random() * 0.35 + 0.75,
+            alpha: 1,
+            color: colors[Math.floor(Math.random() * 4)]
+          });
+        }
+      }
+
+      function drawPajama(ctx, p) {
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation);
+        ctx.scale(p.scale, p.scale);
+        ctx.globalAlpha = p.alpha;
+
+        ctx.shadowColor = '#FFD700';
+        ctx.shadowBlur = 10;
+
+        if (p.type === 'batola') {
+          // Batola Rosa
+          ctx.fillStyle = '#E8177A';
+          ctx.beginPath();
+          ctx.moveTo(-10, -14);
+          ctx.lineTo(10, -14);
+          ctx.lineTo(16, 18);
+          ctx.quadraticCurveTo(0, 24, -16, 18);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.strokeStyle = '#FFFFFF';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(-7, -20); ctx.lineTo(-7, -14);
+          ctx.moveTo(7, -20); ctx.lineTo(7, -14);
+          ctx.stroke();
+
+          ctx.fillStyle = '#FFD700';
+          ctx.beginPath();
+          ctx.arc(0, 0, 4, 0, Math.PI * 2);
+          ctx.fill();
+
+        } else if (p.type === 'short_lolita') {
+          // Short Lolita
+          ctx.fillStyle = '#9C27B0';
+          ctx.beginPath();
+          ctx.moveTo(-14, -8);
+          ctx.lineTo(14, -8);
+          ctx.lineTo(12, 12);
+          ctx.lineTo(2, 12);
+          ctx.lineTo(0, 4);
+          ctx.lineTo(-2, 12);
+          ctx.lineTo(-12, 12);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.strokeStyle = '#FF1E8A';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.arc(-7, 12, 5, 0, Math.PI);
+          ctx.arc(7, 12, 5, 0, Math.PI);
+          ctx.stroke();
+
+        } else if (p.type === 'top_capri') {
+          // Crop Top DÃ¡lmatas
+          ctx.fillStyle = '#00BFFF';
+          ctx.beginPath();
+          ctx.moveTo(-12, -12);
+          ctx.lineTo(12, -12);
+          ctx.lineTo(15, 6);
+          ctx.lineTo(-15, 6);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.fillStyle = '#FFFFFF';
+          ctx.beginPath();
+          ctx.arc(-5, -3, 2.5, 0, Math.PI * 2);
+          ctx.arc(5, -3, 2.5, 0, Math.PI * 2);
+          ctx.arc(0, 2, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+
+        } else if (p.type === 'gift_box') {
+          // Caja de Regalo
+          ctx.fillStyle = '#E8177A';
+          ctx.fillRect(-12, -12, 24, 24);
+          ctx.fillStyle = '#FFD700';
+          ctx.fillRect(-3, -12, 6, 24);
+          ctx.fillRect(-12, -3, 24, 6);
+          ctx.beginPath();
+          ctx.arc(-4, -15, 4, 0, Math.PI * 2);
+          ctx.arc(4, -15, 4, 0, Math.PI * 2);
+          ctx.fill();
+
+        } else {
+          // Conjunto 2 piezas
+          ctx.fillStyle = '#FF1E8A';
+          ctx.fillRect(-10, -14, 20, 12);
+          ctx.fillStyle = '#00E5FF';
+          ctx.fillRect(-9, 1, 18, 12);
+          ctx.fillStyle = '#FFD700';
+          ctx.beginPath();
+          ctx.arc(0, -8, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.restore();
+      }
+
+      function renderStardust() {
+        if (animTime > 5.5) return;
+        sCtx.clearRect(0, 0, sW, sH);
+        animTime += 0.016;
+
+        spawnParticles();
+
+        // Sparks
+        for (let i = sparks.length - 1; i >= 0; i--) {
+          const s = sparks[i];
+          s.x += s.vx;
+          s.y += s.vy;
+          s.alpha -= 0.018;
+
+          if (s.alpha <= 0) {
+            sparks.splice(i, 1);
+            continue;
+          }
+
+          sCtx.save();
+          sCtx.globalAlpha = s.alpha;
+          sCtx.fillStyle = s.color;
+          sCtx.shadowColor = s.color;
+          sCtx.shadowBlur = 8;
+          sCtx.beginPath();
+          sCtx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+          sCtx.fill();
+          sCtx.restore();
+        }
+
+        // Floating falling pajamas
+        for (let i = fallingPajamas.length - 1; i >= 0; i--) {
+          const p = fallingPajamas[i];
+          p.sway += p.swaySpeed;
+          p.x += Math.sin(p.sway) * 1.6 + p.vx;
+          p.y += p.vy;
+          p.rotation += p.rotSpeed;
+
+          if (animTime > 3.8) {
+            p.alpha -= 0.025;
+          }
+
+          if (p.alpha <= 0 || p.y > sH + 50) {
+            fallingPajamas.splice(i, 1);
+            continue;
+          }
+
+          drawPajama(sCtx, p);
+        }
+
+        requestAnimationFrame(renderStardust);
+      }
+
+      requestAnimationFrame(renderStardust);
+    }
+  }
+
+  // 2. REALISTIC 3D BOKEH SNOW EFFECT
+  const snowCanvas = document.getElementById('snow-bokeh-canvas');
+  if (snowCanvas) {
+    const ctx = snowCanvas.getContext('2d');
+    let width = snowCanvas.width = window.innerWidth;
+    let height = snowCanvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      width = snowCanvas.width = window.innerWidth;
+      height = snowCanvas.height = window.innerHeight;
     });
-  }
 
-  let isVisible = true;
-  document.addEventListener('visibilitychange', () => {
-    isVisible = !document.hidden;
-    if (isVisible) requestAnimationFrame(render);
-  });
+    const particleCount = width < 768 ? 40 : 70;
+    const particles = [];
 
-  function render() {
-    if (!isVisible) return;
-    ctx.clearRect(0, 0, width, height);
+    for (let i = 0; i < particleCount; i++) {
+      const layer = Math.random();
+      let radius, speedY, opacity, blur;
 
-    for (let i = 0; i < particles.length; i++) {
-      const p = particles[i];
-      p.y += p.speedY;
-      p.swing += p.swingSpeed;
-      p.x += Math.sin(p.swing) * p.swingAmplitude;
-
-      // Wrap around
-      if (p.y > height + p.radius * 2) {
-        p.y = -p.radius * 2;
-        p.x = Math.random() * width;
-      }
-      if (p.x > width + p.radius * 2) p.x = -p.radius * 2;
-      if (p.x < -p.radius * 2) p.x = width + p.radius * 2;
-
-      // Draw realistic soft bokeh snowflake
-      const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
-      if (p.blur) {
-        grad.addColorStop(0, `rgba(255, 255, 255, ${p.opacity})`);
-        grad.addColorStop(0.4, `rgba(255, 240, 248, ${p.opacity * 0.6})`);
-        grad.addColorStop(0.8, `rgba(255, 230, 245, ${p.opacity * 0.2})`);
-        grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      if (layer > 0.75) {
+        radius = Math.random() * 9 + 8;
+        speedY = Math.random() * 1.0 + 0.7;
+        opacity = Math.random() * 0.22 + 0.12;
+        blur = true;
+      } else if (layer > 0.35) {
+        radius = Math.random() * 4 + 3;
+        speedY = Math.random() * 0.8 + 0.5;
+        opacity = Math.random() * 0.45 + 0.3;
+        blur = false;
       } else {
-        grad.addColorStop(0, `rgba(255, 255, 255, ${p.opacity})`);
-        grad.addColorStop(0.65, `rgba(255, 245, 250, ${p.opacity * 0.7})`);
-        grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        radius = Math.random() * 2 + 1.2;
+        speedY = Math.random() * 0.5 + 0.3;
+        opacity = Math.random() * 0.65 + 0.35;
+        blur = false;
       }
 
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-      ctx.fill();
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius: radius,
+        speedY: speedY,
+        opacity: opacity,
+        swing: Math.random() * Math.PI * 2,
+        swingSpeed: Math.random() * 0.02 + 0.01,
+        swingAmplitude: Math.random() * 1.4 + 0.6,
+        blur: blur
+      });
     }
 
-    requestAnimationFrame(render);
-  }
+    let isVisible = true;
+    document.addEventListener('visibilitychange', () => {
+      isVisible = !document.hidden;
+      if (isVisible) requestAnimationFrame(renderSnow);
+    });
 
-  requestAnimationFrame(render);
+    function renderSnow() {
+      if (!isVisible) return;
+      ctx.clearRect(0, 0, width, height);
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.y += p.speedY;
+        p.swing += p.swingSpeed;
+        p.x += Math.sin(p.swing) * p.swingAmplitude;
+
+        if (p.y > height + p.radius * 2) {
+          p.y = -p.radius * 2;
+          p.x = Math.random() * width;
+        }
+        if (p.x > width + p.radius * 2) p.x = -p.radius * 2;
+        if (p.x < -p.radius * 2) p.x = width + p.radius * 2;
+
+        const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
+        if (p.blur) {
+          grad.addColorStop(0, `rgba(255, 255, 255, ${p.opacity})`);
+          grad.addColorStop(0.4, `rgba(255, 240, 248, ${p.opacity * 0.6})`);
+          grad.addColorStop(0.8, `rgba(255, 230, 245, ${p.opacity * 0.2})`);
+          grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        } else {
+          grad.addColorStop(0, `rgba(255, 255, 255, ${p.opacity})`);
+          grad.addColorStop(0.65, `rgba(255, 245, 250, ${p.opacity * 0.7})`);
+          grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        }
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      requestAnimationFrame(renderSnow);
+    }
+
+    requestAnimationFrame(renderSnow);
+  }
 })();
 </script>
 </body>
