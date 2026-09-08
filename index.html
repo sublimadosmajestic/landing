@@ -173,18 +173,29 @@
     .proof-item .desc{font-size:12px;color:var(--texto-soft);font-weight:600;margin-top:3px}
     .proof-divider{width:1px;height:40px;background:var(--gris-borde)}
     @media(max-width:480px){.proof-divider{display:none}}
-    .catalogo-cta-section{background:linear-gradient(135deg,var(--negro) 0%,#2C1020 100%);padding:48px 20px}
-    .catalogo-cta-inner{max-width:860px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap}
-    .catalogo-cta-text .eyebrow{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--rosa-light);margin-bottom:10px}
-    .catalogo-cta-text h2{font-family:var(--font-title);font-size:clamp(22px,3vw,36px);font-weight:900;color:var(--blanco);line-height:1.2;margin-bottom:10px}
+    .catalogo-cta-section{position:relative;background:#0F0A0D;padding:56px 20px;overflow:hidden;border-top:1px solid rgba(232,23,122,.3);border-bottom:1px solid rgba(0,229,255,.3)}
+    .catalogo-cta-bg{position:absolute;top:0;left:0;right:0;bottom:0;background-image:url('pijamas-familia-catalogo.png');background-size:cover;background-position:center 30%;opacity:0.32;filter:saturate(1.25) contrast(1.1);transform:scale(1.02);z-index:1;pointer-events:none}
+    .catalogo-cta-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at 50% 50%,rgba(20,10,16,.68) 0%,rgba(10,6,9,.94) 100%),linear-gradient(90deg,rgba(15,10,13,.95) 0%,rgba(15,10,13,.45) 50%,rgba(15,10,13,.95) 100%);z-index:2;pointer-events:none}
+    .catalogo-glow-stream{position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse 380px 240px at 20% 40%,rgba(0,229,255,.38) 0%,transparent 70%),radial-gradient(ellipse 420px 280px at 50% 60%,rgba(232,23,122,.48) 0%,transparent 70%),radial-gradient(ellipse 340px 220px at 80% 35%,rgba(245,200,0,.4) 0%,transparent 70%);filter:blur(50px);mix-blend-mode:screen;opacity:.85;animation:cmykGlowMotion 12s ease-in-out infinite alternate;z-index:3;pointer-events:none}
+    .catalogo-light-beam{position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(105deg,transparent 20%,rgba(0,229,255,.25) 35%,rgba(232,23,122,.4) 50%,rgba(245,200,0,.3) 65%,transparent 80%);filter:blur(25px);mix-blend-mode:screen;animation:lightBeamPass 7s cubic-bezier(.4,0,.2,1) infinite;z-index:4;pointer-events:none}
+    @keyframes cmykGlowMotion{0%{transform:translate(0,0) rotate(0deg) scale(1)}50%{transform:translate(-5%,4%) rotate(3deg) scale(1.08)}100%{transform:translate(6%,-3%) rotate(-3deg) scale(1.04)}}
+    @keyframes lightBeamPass{0%{left:-120%;opacity:0}15%{opacity:1}85%{opacity:1}100%{left:120%;opacity:0}}
+    .catalogo-cta-inner{position:relative;z-index:5;max-width:860px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap}
+    .catalogo-cta-text .eyebrow{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--rosa-light);margin-bottom:10px;display:flex;align-items:center;gap:8px;text-shadow:0 2px 10px rgba(0,0,0,.8)}
+    .cmyk-glow-dots{display:inline-flex;gap:4px;align-items:center}
+    .cmyk-dot{width:8px;height:8px;border-radius:50%;display:inline-block;box-shadow:0 0 8px currentColor}
+    .cmyk-dot.c{background:#00E5FF;color:#00E5FF}
+    .cmyk-dot.m{background:#E8177A;color:#E8177A}
+    .cmyk-dot.y{background:#F5C800;color:#F5C800}
+    .catalogo-cta-text h2{font-family:var(--font-title);font-size:clamp(22px,3vw,36px);font-weight:900;color:var(--blanco);line-height:1.2;margin-bottom:10px;text-shadow:0 2px 20px rgba(0,0,0,.9)}
     .catalogo-cta-text h2 em{color:var(--rosa-light);font-style:italic}
-    .catalogo-cta-text p{color:rgba(255,255,255,.65);font-size:14px}
+    .catalogo-cta-text p{color:rgba(255,255,255,.85);font-size:14px;text-shadow:0 1px 12px rgba(0,0,0,.9);max-width:480px}
     .catalogo-cta-actions{display:flex;flex-direction:column;gap:10px;min-width:240px}
-    .btn-wa-xl{background:linear-gradient(135deg,#E8177A 0%,#FF1E8A 50%,#B8105E 100%);color:white;font-size:17px;font-weight:900;padding:18px 28px;border-radius:100px;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 28px rgba(232,23,122,.4);transition:transform .18s;white-space:nowrap;text-decoration:none}
-    .btn-wa-xl:hover{transform:scale(1.04)}
+    .btn-wa-xl{background:linear-gradient(135deg,#E8177A 0%,#FF1E8A 50%,#B8105E 100%);color:white;font-size:17px;font-weight:900;padding:18px 28px;border-radius:100px;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 28px rgba(232,23,122,.5),0 0 20px rgba(0,229,255,.2);transition:transform .18s,box-shadow .18s;white-space:nowrap;text-decoration:none}
+    .btn-wa-xl:hover{transform:scale(1.04);box-shadow:0 10px 36px rgba(232,23,122,.65),0 0 28px rgba(0,229,255,.35);color:#ffffff}
     .btn-wa-xl svg{width:22px;height:22px;fill:white}
     .catalogo-chips{display:flex;gap:8px;flex-wrap:wrap}
-    .cat-chip{font-size:11px;font-weight:700;color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:4px 10px}
+    .cat-chip{font-size:11px;font-weight:700;color:rgba(255,255,255,.9);background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(8px);border-radius:100px;padding:4px 12px}
     .coleccion-section{background:var(--blanco)}
     .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;margin-top:40px}
     .product-card{border-radius:var(--radius);border:1px solid var(--gris-borde);overflow:hidden;transition:transform .2s,box-shadow .2s;background:var(--blanco)}
@@ -400,19 +411,23 @@
 </div>
 
 <div class="catalogo-cta-section" id="mayorista">
+  <div class="catalogo-cta-bg"></div>
+  <div class="catalogo-cta-overlay"></div>
+  <div class="catalogo-glow-stream"></div>
+  <div class="catalogo-light-beam"></div>
   <div class="catalogo-cta-inner">
     <div class="catalogo-cta-text">
-      <div class="eyebrow">📲 Catálogo Disponible Ahora</div>
-      <h2>Descubre todos nuestros <em>diseños exclusivos</em></h2>
-      <p>Batolas, pijamas capri, short lolita, pantalón lolita y más. Diseños únicos que se venden solos.</p>
+      <div class="eyebrow"><span class="cmyk-glow-dots"><span class="cmyk-dot c"></span><span class="cmyk-dot m"></span><span class="cmyk-dot y"></span></span> CatÃ¡logo Disponible Ahora</div>
+      <h2>Descubre todos nuestros <em>diseÃ±os exclusivos</em></h2>
+      <p>Batolas, pijamas capri, short lolita, pantalÃ³n lolita y mÃ¡s. DiseÃ±os Ãºnicos que se venden solos.</p>
     </div>
     <div class="catalogo-cta-actions">
-      <a href="https://pijamasalmayor.com/sublimados_majestic" target="_blank" rel="noopener" class="btn-wa-xl"><svg viewBox="0 0 24 24"><path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12zm-7-8c-1.66 0-3-1.34-3-3H7c0 2.76 2.24 5 5 5s5-2.24 5-5h-2c0 1.66-1.34 3-3 3z"/></svg> Ver Catálogo Completo</a>
+      <a href="https://pijamasalmayor.com/sublimados_majestic" target="_blank" rel="noopener" class="btn-wa-xl"><svg viewBox="0 0 24 24"><path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12zm-7-8c-1.66 0-3-1.34-3-3H7c0 2.76 2.24 5 5 5s5-2.24 5-5h-2c0 1.66-1.34 3-3 3z"/></svg> Ver CatÃ¡logo Completo</a>
       <div class="catalogo-chips">
-        <span class="cat-chip">🛏️ Batolas</span>
-        <span class="cat-chip">👙 Short Lolita</span>
-        <span class="cat-chip">👗 Capri</span>
-        <span class="cat-chip">👚 Conjuntos</span>
+        <span class="cat-chip">ðŸ›ï¸ Batolas</span>
+        <span class="cat-chip">ðŸ‘™ Short Lolita</span>
+        <span class="cat-chip">ðŸ‘— Capri</span>
+        <span class="cat-chip">ðŸ‘š Conjuntos</span>
       </div>
     </div>
   </div>
