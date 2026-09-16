@@ -502,6 +502,25 @@
       background: #FFFFFF;
     }
 
+    /* Instagram Behold feed — skeleton loader */
+    .insta-skeleton-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+      padding: 5px;
+      background: #FFFFFF;
+    }
+    .insta-skeleton-item {
+      aspect-ratio: 1 / 1;
+      background: linear-gradient(90deg, #f5e8ef 25%, #fce4f0 50%, #f5e8ef 75%);
+      background-size: 200% 100%;
+      animation: instaSkeletonShimmer 1.5s infinite;
+    }
+    @keyframes instaSkeletonShimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
     .insta-box-item {
       position: relative;
       aspect-ratio: 1 / 1;
@@ -1048,7 +1067,7 @@
 
     <!-- 3-Column Scrollable Feed Wall (Exact Instagram Layout) -->
     <div class="insta-box-scroll-wall" id="instaBoxWall">
-      <div class="insta-box-grid">
+      <div class="insta-box-grid" id="instaBoxGrid">
         <!-- Post 1 (Reel) -->
         <a href="https://www.instagram.com/sublimadosmajestic" target="_blank" rel="noopener" class="insta-box-item">
           <img src="pantalon-camisa-familia.jpg" alt="Pijamas Familiares" loading="lazy">
@@ -1489,6 +1508,57 @@
   }
 })();
 </script>
+  
+  <!-- INSTAGRAM BEHOLD FEED — CONFIG (editable desde el CMS) -->
+  <script id="instaFeedConfig" type="application/json">{"feedId":""}</script>
+
+  <!-- INSTAGRAM LIVE FEED LOADER -->
+  <script>
+  (function () {
+    'use strict';
+    try {
+      var cfgEl  = document.getElementById('instaFeedConfig');
+      var feedId = cfgEl ? (JSON.parse(cfgEl.textContent || '{}').feedId || '') : '';
+      var grid   = document.getElementById('instaBoxGrid');
+      if (!grid || !feedId) return;
+      var sk = '';
+      for (var s = 0; s < 12; s++) sk += '<div class="insta-skeleton-item"></div>';
+      grid.innerHTML = '<div class="insta-skeleton-grid">' + sk + '</div>';
+      fetch('https://feeds.behold.so/' + feedId)
+        .then(function (r) { return r.ok ? r.json() : Promise.reject('HTTP ' + r.status); })
+        .then(function (posts) {
+          if (!Array.isArray(posts) || !posts.length) throw new Error('sin posts');
+          grid.innerHTML = posts.slice(0, 12).map(function (p) {
+            var isVideo    = p.mediaType === 'VIDEO' || p.mediaType === 'REELS';
+            var isCarousel = p.mediaType === 'CAROUSEL_ALBUM';
+            var img   = p.thumbnailUrl || p.mediaUrl || '';
+            var likes = (p.likeCount    || 0).toLocaleString('es-CO');
+            var coms  = (p.commentsCount || 0).toLocaleString('es-CO');
+            var link  = p.permalink || 'https://www.instagram.com/sublimadosmajestic';
+            var alt   = (p.caption || 'Sublimados Majestic').substring(0, 80).replace(/"/g, '&quot;');
+            var badge = isVideo
+              ? '<span class="insta-badge-icon" title="Video Reel"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>'
+              : isCarousel
+              ? '<span class="insta-badge-icon" title="Carrusel"><svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg></span>'
+              : '';
+            return '<a href="' + link + '" target="_blank" rel="noopener" class="insta-box-item">'
+              + '<img src="' + img + '" alt="' + alt + '" loading="lazy">'
+              + badge
+              + '<div class="insta-box-overlay">'
+              + '<span class="insta-box-stat-item">\u2764\uFE0F ' + likes + '</span>'
+              + '<span class="insta-box-stat-item">\uD83D\uDCAC ' + coms  + '</span>'
+              + '</div></a>';
+          }).join('');
+        })
+        .catch(function (e) {
+          console.warn('[Majestic IG] Feed no disponible, mostrando galería local.', e);
+        });
+    } catch (e) {
+      console.warn('[Majestic IG] Config error:', e);
+    }
+  })();
+  </script>
+
   <!-- CMS ON-PAGE ENGINE -->
   <script src="cms-editor.js" defer=""></script>
 
