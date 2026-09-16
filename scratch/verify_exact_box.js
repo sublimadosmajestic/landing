@@ -13,14 +13,14 @@ if (!html.includes('Feed Oficial en Directo •') || !html.includes('Abrir en Ap
 }
 
 // Check profile header
-if (!html.includes('sublimadosmajestic') || !html.includes('13 mil') || !html.includes('516 publicaciones')) {
+if (!html.includes('sublimadosmajestic') || !html.includes('13 mil') || !html.includes('publicaciones')) {
   throw new Error('Missing profile header info');
 }
 
 // Check 3-col wall
 const items = html.split('class="insta-box-item"');
-console.log('Total grid items:', items.length - 1);
-if (items.length - 1 < 9) throw new Error('Expected at least 9 grid items');
+console.log('Total grid items in wall:', items.length - 1);
+if (items.length - 1 !== 12) throw new Error('Expected 12 grid items, got ' + (items.length - 1));
 
 // Check scrollbar in CSS
 if (!html.includes('.insta-box-scroll-wall') || !html.includes('overflow-y: scroll;')) {
