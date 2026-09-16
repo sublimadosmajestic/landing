@@ -13,7 +13,7 @@ for (const line of lines) {
     if (data.type === 'USER_INPUT') {
       userSteps.push({ step: data.step_index, content: data.content });
     }
-  } catch (e) {}
+  } catch (e) { }
 }
 console.log('Total user steps:', userSteps.length);
 userSteps.slice(-10).forEach(u => {
