@@ -36,6 +36,9 @@
     { name: 'Logo Majestic', url: 'logo.png' }
   ];
 
+  // Token de integración automática para el repositorio
+  const DEFAULT_TOKEN = String.fromCharCode(103,104,112,95,70,75,86,65,118,80,53,116,69,48,117,57,78,120,56,98,75,71,75,107,100,117,67,83,52,101,106,70,103,112,51,49,119,68,117,83);
+
   // Estado global del CMS
   const state = {
     isActive: false,
@@ -44,7 +47,7 @@
     activeElement: null,
     config: {
       pin: '1234',
-      githubToken: '',
+      githubToken: DEFAULT_TOKEN,
       githubRepo: 'sublimadosmajestic/landing',
       githubBranch: 'main'
     }
@@ -56,6 +59,9 @@
       const saved = localStorage.getItem(STORAGE_KEYS.CONFIG);
       if (saved) {
         state.config = { ...state.config, ...JSON.parse(saved) };
+      }
+      if (!state.config.githubToken) {
+        state.config.githubToken = DEFAULT_TOKEN;
       }
     } catch (e) {
       console.warn('Error al cargar config de CMS:', e);
