@@ -689,7 +689,8 @@
             <label class="cms-form-label">GitHub Personal Access Token (PAT)</label>
             <input type="password" id="cms-set-token" class="cms-form-input" value="${state.config.githubToken}" placeholder="ghp_xxxxxxxxxxxx" />
             <small class="cms-form-help">
-              Permite publicar cambios directamente al repositorio GitHub sin tocar código. Requiere permisos <code>repo</code> o <code>contents:write</code>.
+              Permite publicar cambios directamente al repositorio GitHub sin tocar código. Requiere permisos <code>repo</code>.<br/>
+              👉 <a href="https://github.com/settings/tokens/new?scopes=repo&description=CMS%20Sublimados%20Majestic" target="_blank" rel="noopener" style="color: var(--cms-primary); font-weight: 800; text-decoration: underline;">Haz clic aquí para crear tu Token de GitHub</a> (ya tiene el permiso 'repo' seleccionado).
             </small>
           </div>
 
