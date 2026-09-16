@@ -1,0 +1,935 @@
+/**
+ * ==========================================================================
+ * SUBLIMADOS MAJESTIC - IN-PAGE VISUAL CMS ENGINE
+ * ==========================================================================
+ * Permite seleccionar y editar visualmente cualquier elemento de la página
+ * (textos, imágenes, enlaces, botones de WhatsApp, tarjetas de productos)
+ * con persistencia de borrador, descarga de HTML limpio y publicación
+ * directa en GitHub Pages.
+ */
+
+(function () {
+  'use strict';
+
+  // Configuración y claves de almacenamiento local
+  const STORAGE_KEYS = {
+    CONFIG: 'majestic_cms_config',
+    SESSION: 'majestic_cms_session',
+    DRAFT: 'majestic_cms_draft_v1',
+    IMAGES: 'majestic_cms_custom_images'
+  };
+
+  // Galería de imágenes nativas del proyecto
+  const DEFAULT_GALLERY = [
+    { name: 'Banner Navidad', url: 'header-banner-navidad.jpg' },
+    { name: 'Banner Principal', url: 'header-banner.png' },
+    { name: 'Pijama Familia Catálogo', url: 'pijamas-familia-catalogo.png' },
+    { name: 'Pantalón Camisa Familia', url: 'pantalon-camisa-familia.jpg' },
+    { name: 'Familia Santa Parallax', url: 'familia-santa-parallax.jpg' },
+    { name: 'Pijama Carrusel 1', url: '1Carrusel.jpg' },
+    { name: 'Pijama Carrusel 2', url: '2Carrusel.jpg' },
+    { name: 'Pijama Carrusel 3', url: '3Carrusel.jpg' },
+    { name: 'Pijama Carrusel 4', url: '4Carrusel.jpg' },
+    { name: 'Pijama Carrusel 5', url: '5Carrusel.jpg' },
+    { name: 'Pijama Carrusel 6', url: '6Carrusel.jpg' },
+    { name: 'Pijama Carrusel 7', url: '7Carrusel.jpg' },
+    { name: 'Logo Majestic', url: 'logo.png' }
+  ];
+
+  // Estado global del CMS
+  const state = {
+    isActive: false,
+    isPreview: false,
+    hasUnsavedChanges: false,
+    activeElement: null,
+    config: {
+      pin: '1234',
+      githubToken: '',
+      githubRepo: 'sublimadosmajestic/landing',
+      githubBranch: 'main'
+    }
+  };
+
+  // Cargar configuración guardada
+  function loadConfig() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.CONFIG);
+      if (saved) {
+        state.config = { ...state.config, ...JSON.parse(saved) };
+      }
+    } catch (e) {
+      console.warn('Error al cargar config de CMS:', e);
+    }
+  }
+
+  function saveConfig() {
+    try {
+      localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify(state.config));
+    } catch (e) {
+      console.warn('Error al guardar config de CMS:', e);
+    }
+  }
+
+  // Notificaciones Toast
+  function showToast(message, type = 'info', duration = 3500) {
+    let container = document.getElementById('cms-toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'cms-toast-container';
+      document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `cms-toast ${type}`;
+
+    let icon = 'ℹ️';
+    if (type === 'success') icon = '✅';
+    if (type === 'error') icon = '❌';
+    if (type === 'warning') icon = '⚠️';
+
+    toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+    container.appendChild(toast);
+
+    requestAnimationFrame(() => toast.classList.add('show'));
+
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 300);
+    }, duration);
+  }
+
+  // Creación de la barra superior de herramientas
+  function createToolbar() {
+    if (document.getElementById('majestic-cms-bar')) return;
+
+    const bar = document.createElement('div');
+    bar.id = 'majestic-cms-bar';
+    bar.innerHTML = `
+      <div class="cms-bar-brand">
+        <span class="cms-brand-badge">MAJESTIC CMS</span>
+        <div class="cms-status-indicator">
+          <span class="cms-status-dot"></span>
+          <span id="cms-status-text">Modo Editor Activo</span>
+        </div>
+      </div>
+      <div class="cms-bar-actions">
+        <button id="cms-btn-preview" class="cms-btn cms-btn-preview" title="Ocultar resaltados para ver como un visitante">👁️ Previsualizar</button>
+        <button id="cms-btn-draft" class="cms-btn cms-btn-draft" title="Guardar cambios temporalmente en el navegador">💾 Guardar Borrador</button>
+        <button id="cms-btn-download" class="cms-btn cms-btn-download" title="Descargar index.html limpio">📥 Descargar HTML</button>
+        <button id="cms-btn-publish" class="cms-btn cms-btn-publish" title="Publicar cambios a GitHub Pages">🚀 Publicar en la Web</button>
+        <button id="cms-btn-settings" class="cms-btn cms-btn-settings" title="Configurar GitHub y clave">⚙️</button>
+        <button id="cms-btn-exit" class="cms-btn cms-btn-exit" title="Salir del modo edición">✕ Salir</button>
+      </div>
+    `;
+    document.body.prepend(bar);
+
+    // Eventos de botones
+    document.getElementById('cms-btn-preview').addEventListener('click', togglePreview);
+    document.getElementById('cms-btn-draft').addEventListener('click', saveDraft);
+    document.getElementById('cms-btn-download').addEventListener('click', downloadHtml);
+    document.getElementById('cms-btn-publish').addEventListener('click', publishToGitHub);
+    document.getElementById('cms-btn-settings').addEventListener('click', openSettingsModal);
+    document.getElementById('cms-btn-exit').addEventListener('click', deactivateCMS);
+  }
+
+  // Alternar vista previa (sin marcas de edición)
+  function togglePreview() {
+    state.isPreview = !state.isPreview;
+    const btn = document.getElementById('cms-btn-preview');
+    const statusText = document.getElementById('cms-status-text');
+
+    if (state.isPreview) {
+      document.body.classList.add('cms-preview-mode');
+      btn.classList.add('active-preview');
+      btn.innerHTML = '✏️ Continuar Editando';
+      if (statusText) statusText.textContent = 'Vista Previa (Cliente)';
+      showToast('Modo Previsualización: los resaltados están ocultos', 'info');
+    } else {
+      document.body.classList.remove('cms-preview-mode');
+      btn.classList.remove('active-preview');
+      btn.innerHTML = '👁️ Previsualizar';
+      if (statusText) statusText.textContent = 'Modo Editor Activo';
+      showToast('Modo Edición Reactivado', 'info');
+    }
+  }
+
+  // Autenticación por PIN
+  function openLoginModal() {
+    const existing = document.getElementById('cms-login-modal');
+    if (existing) existing.remove();
+
+    const backdrop = document.createElement('div');
+    backdrop.id = 'cms-login-modal';
+    backdrop.className = 'cms-modal-backdrop active';
+    backdrop.innerHTML = `
+      <div class="cms-modal" style="max-width: 400px; text-align: center;">
+        <div class="cms-modal-header" style="justify-content: center;">
+          <h3 class="cms-modal-title">🔒 Acceso Administrador</h3>
+        </div>
+        <div class="cms-modal-body">
+          <p style="margin: 0; font-size: 13.5px; color: #7A5060;">
+            Ingresa tu PIN de seguridad para habilitar la edición en pantalla de Sublimados Majestic:
+          </p>
+          <div class="cms-form-group" style="margin-top: 10px;">
+            <input type="password" id="cms-pin-input" class="cms-form-input" placeholder="PIN (por defecto: 1234)" maxlength="8" style="font-size: 20px; text-align: center; letter-spacing: 4px;" autofocus />
+          </div>
+          <small class="cms-form-help">PIN predeterminado: <strong>1234</strong> (configurable en ajustes).</small>
+        </div>
+        <div class="cms-modal-footer" style="justify-content: center;">
+          <button id="cms-login-cancel" class="cms-btn cms-btn-cancel">Cancelar</button>
+          <button id="cms-login-submit" class="cms-btn cms-btn-save">Ingresar</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(backdrop);
+
+    const input = document.getElementById('cms-pin-input');
+    const submitBtn = document.getElementById('cms-login-submit');
+    const cancelBtn = document.getElementById('cms-login-cancel');
+
+    function checkPin() {
+      const entered = input.value.trim();
+      if (entered === state.config.pin) {
+        backdrop.remove();
+        sessionStorage.setItem(STORAGE_KEYS.SESSION, 'authenticated');
+        activateCMS();
+        showToast('¡Bienvenido al Modo Editor de Sublimados Majestic!', 'success');
+      } else {
+        showToast('PIN incorrecto. Intenta de nuevo.', 'error');
+        input.value = '';
+        input.focus();
+      }
+    }
+
+    submitBtn.addEventListener('click', checkPin);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') checkPin();
+      if (e.key === 'Escape') backdrop.remove();
+    });
+    cancelBtn.addEventListener('click', () => backdrop.remove());
+  }
+
+  // Activar modo CMS
+  function activateCMS() {
+    createToolbar();
+    const bar = document.getElementById('majestic-cms-bar');
+    if (bar) bar.classList.add('active');
+    document.body.classList.add('cms-active');
+    state.isActive = true;
+    scanEditableElements();
+  }
+
+  // Desactivar modo CMS
+  function deactivateCMS() {
+    const bar = document.getElementById('majestic-cms-bar');
+    if (bar) bar.classList.remove('active');
+    document.body.classList.remove('cms-active');
+    document.body.classList.remove('cms-preview-mode');
+    state.isActive = false;
+    state.isPreview = false;
+    sessionStorage.removeItem(STORAGE_KEYS.SESSION);
+    showToast('Modo edición cerrado', 'info');
+  }
+
+  // Escanear elementos editables
+  function scanEditableElements() {
+    const elements = document.querySelectorAll('[data-cms]');
+    elements.forEach((el) => {
+      if (el._cmsBound) return;
+      el._cmsBound = true;
+
+      el.addEventListener('click', (e) => {
+        if (!state.isActive || state.isPreview) return;
+
+        // Evitar navegación si es enlace o botón
+        e.preventDefault();
+        e.stopPropagation();
+
+        state.activeElement = el;
+        const type = el.getAttribute('data-cms-type') || detectElementType(el);
+
+        if (type === 'image') {
+          openImageModal(el);
+        } else if (type === 'link') {
+          openLinkModal(el);
+        } else if (type === 'card') {
+          openCardModal(el);
+        } else {
+          openTextModal(el);
+        }
+      });
+    });
+  }
+
+  function detectElementType(el) {
+    if (el.tagName === 'IMG') return 'image';
+    if (el.tagName === 'A' || el.classList.contains('btn') || el.classList.contains('card-cta') || el.classList.contains('btn-wa-xl')) return 'link';
+    if (el.classList.contains('product-card')) return 'card';
+    return 'text';
+  }
+
+  // Modal 1: Editor de Texto / Título / Subtítulo
+  function openTextModal(el) {
+    const fieldName = el.getAttribute('data-cms') || 'Elemento';
+    const isHtml = el.innerHTML.includes('<') && (el.innerHTML.includes('<em>') || el.innerHTML.includes('<span>') || el.innerHTML.includes('<br'));
+    const initialContent = isHtml ? el.innerHTML : el.innerText;
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'cms-modal-backdrop active';
+    backdrop.innerHTML = `
+      <div class="cms-modal">
+        <div class="cms-modal-header">
+          <h3 class="cms-modal-title">✏️ Editar: ${formatFieldName(fieldName)}</h3>
+          <button class="cms-modal-close">&times;</button>
+        </div>
+        <div class="cms-modal-body">
+          <div class="cms-form-group">
+            <label class="cms-form-label">Contenido</label>
+            <textarea id="cms-text-editor" class="cms-form-textarea" style="min-height: 130px;">${escapeHtml(initialContent)}</textarea>
+            <small class="cms-form-help">
+              Puedes usar etiquetas simples como <code>&lt;em&gt;texto cursiva rosa&lt;/em&gt;</code>, <code>&lt;strong&gt;negrita&lt;/strong&gt;</code> o <code>&lt;br&gt;</code> para saltos de línea.
+            </small>
+          </div>
+        </div>
+        <div class="cms-modal-footer">
+          <button class="cms-btn cms-btn-cancel">Cancelar</button>
+          <button id="cms-text-save" class="cms-btn cms-btn-save">Guardar Cambios</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(backdrop);
+
+    const textarea = backdrop.querySelector('#cms-text-editor');
+    const saveBtn = backdrop.querySelector('#cms-text-save');
+    const closeBtns = backdrop.querySelectorAll('.cms-modal-close, .cms-btn-cancel');
+
+    closeBtns.forEach((btn) => btn.addEventListener('click', () => backdrop.remove()));
+
+    saveBtn.addEventListener('click', () => {
+      const val = textarea.value;
+      if (isHtml) {
+        el.innerHTML = val;
+      } else {
+        el.innerText = val;
+      }
+      state.hasUnsavedChanges = true;
+      backdrop.remove();
+      showToast('Texto actualizado', 'success');
+    });
+  }
+
+  // Modal 2: Editor de Imágenes (Banners, Fotos de Producto, Logo)
+  function openImageModal(el) {
+    const imgEl = el.tagName === 'IMG' ? el : el.querySelector('img');
+    const currentSrc = imgEl ? imgEl.getAttribute('src') : '';
+    const currentAlt = imgEl ? imgEl.getAttribute('alt') || '' : '';
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'cms-modal-backdrop active';
+
+    // Miniaturas de galería
+    let galleryHtml = '';
+    DEFAULT_GALLERY.forEach((item) => {
+      const isSelected = item.url === currentSrc ? 'selected' : '';
+      galleryHtml += `
+        <div class="cms-gallery-item ${isSelected}" data-img-url="${item.url}" title="${item.name}">
+          <img src="${item.url}" alt="${item.name}" loading="lazy" />
+          <span class="cms-gallery-label">${item.name}</span>
+        </div>
+      `;
+    });
+
+    backdrop.innerHTML = `
+      <div class="cms-modal" style="max-width: 620px;">
+        <div class="cms-modal-header">
+          <h3 class="cms-modal-title">📷 Cambiar Imagen</h3>
+          <button class="cms-modal-close">&times;</button>
+        </div>
+        <div class="cms-modal-body">
+          <div class="cms-form-group">
+            <label class="cms-form-label">Vista Previa Actual</label>
+            <div class="cms-image-preview-box">
+              <img id="cms-img-preview" src="${currentSrc}" alt="Vista previa" />
+            </div>
+          </div>
+
+          <div class="cms-form-group">
+            <label class="cms-form-label">Opción 1: Seleccionar de la Galería Majestic</label>
+            <div class="cms-gallery-grid" id="cms-gallery-grid">
+              ${galleryHtml}
+            </div>
+          </div>
+
+          <div class="cms-form-group">
+            <label class="cms-form-label">Opción 2: Subir Foto Nueva desde tu Dispositivo</label>
+            <input type="file" id="cms-file-uploader" accept="image/*" class="cms-form-input" />
+            <small class="cms-form-help">Selecciona una imagen desde tu PC o celular. Se adaptará automáticamente.</small>
+          </div>
+
+          <div class="cms-form-group">
+            <label class="cms-form-label">Opción 3: Ruta o URL Externa</label>
+            <input type="text" id="cms-img-url-input" class="cms-form-input" value="${currentSrc}" placeholder="ej: 1Carrusel.jpg o https://..." />
+          </div>
+
+          <div class="cms-form-group">
+            <label class="cms-form-label">Texto Descriptivo (SEO / Alt)</label>
+            <input type="text" id="cms-img-alt-input" class="cms-form-input" value="${escapeHtml(currentAlt)}" />
+          </div>
+        </div>
+        <div class="cms-modal-footer">
+          <button class="cms-btn cms-btn-cancel">Cancelar</button>
+          <button id="cms-img-save" class="cms-btn cms-btn-save">Aplicar Imagen</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(backdrop);
+
+    const previewImg = backdrop.querySelector('#cms-img-preview');
+    const urlInput = backdrop.querySelector('#cms-img-url-input');
+    const altInput = backdrop.querySelector('#cms-img-alt-input');
+    const fileUploader = backdrop.querySelector('#cms-file-uploader');
+    const galleryItems = backdrop.querySelectorAll('.cms-gallery-item');
+    const saveBtn = backdrop.querySelector('#cms-img-save');
+    const closeBtns = backdrop.querySelectorAll('.cms-modal-close, .cms-btn-cancel');
+
+    closeBtns.forEach((btn) => btn.addEventListener('click', () => backdrop.remove()));
+
+    galleryItems.forEach((item) => {
+      item.addEventListener('click', () => {
+        galleryItems.forEach((i) => i.classList.remove('selected'));
+        item.classList.add('selected');
+        const url = item.getAttribute('data-img-url');
+        urlInput.value = url;
+        previewImg.src = url;
+      });
+    });
+
+    fileUploader.addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        previewImg.src = e.target.result;
+        urlInput.value = e.target.result;
+        galleryItems.forEach((i) => i.classList.remove('selected'));
+        showToast('Foto cargada en vista previa', 'info');
+      };
+      reader.readAsDataURL(file);
+    });
+
+    urlInput.addEventListener('input', () => {
+      previewImg.src = urlInput.value;
+    });
+
+    saveBtn.addEventListener('click', () => {
+      const finalSrc = urlInput.value.trim();
+      const finalAlt = altInput.value.trim();
+
+      if (imgEl) {
+        imgEl.src = finalSrc;
+        if (finalAlt) imgEl.alt = finalAlt;
+      } else if (el.style) {
+        el.style.backgroundImage = `url('${finalSrc}')`;
+      }
+
+      state.hasUnsavedChanges = true;
+      backdrop.remove();
+      showToast('Imagen actualizada', 'success');
+    });
+  }
+
+  // Modal 3: Editor de Enlaces / Botones de WhatsApp
+  function openLinkModal(el) {
+    const isAnchor = el.tagName === 'A';
+    const currentHref = isAnchor ? el.getAttribute('href') || '' : '';
+    const currentText = el.innerText.trim();
+
+    // Detección de enlace de WhatsApp
+    const isWa = currentHref.includes('wa.me') || currentHref.includes('whatsapp');
+    let waPhone = '573226219813';
+    let waMsg = '';
+
+    if (isWa) {
+      try {
+        const urlObj = new URL(currentHref);
+        waPhone = urlObj.pathname.replace(/[^0-9]/g, '') || waPhone;
+        waMsg = urlObj.searchParams.get('text') || '';
+      } catch (e) {
+        // Fallback básico si la URL es relativa
+        const parts = currentHref.split('text=');
+        if (parts[1]) waMsg = decodeURIComponent(parts[1]);
+      }
+    }
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'cms-modal-backdrop active';
+    backdrop.innerHTML = `
+      <div class="cms-modal">
+        <div class="cms-modal-header">
+          <h3 class="cms-modal-title">🔗 Editar Botón / Enlace</h3>
+          <button class="cms-modal-close">&times;</button>
+        </div>
+        <div class="cms-modal-body">
+          <div class="cms-form-group">
+            <label class="cms-form-label">Texto del Botón</label>
+            <input type="text" id="cms-link-text" class="cms-form-input" value="${escapeHtml(currentText)}" />
+          </div>
+
+          <div class="cms-form-group">
+            <label class="cms-form-label">Enlace de Destino (URL)</label>
+            <input type="text" id="cms-link-href" class="cms-form-input" value="${escapeHtml(currentHref)}" />
+            <small class="cms-form-help">Ej: <code>https://pijamasalmayor.com/sublimados_majestic</code> o un link directo de WhatsApp.</small>
+          </div>
+
+          <div style="background: #E8F8EE; border: 1.5px solid #25D366; padding: 14px; border-radius: 12px; margin-top: 6px;">
+            <h4 style="margin: 0 0 8px 0; color: #128C7E; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 6px;">
+              <span>📲</span> Generador de Enlace WhatsApp
+            </h4>
+            <div class="cms-form-group">
+              <label class="cms-form-label" style="color: #128C7E;">Número de WhatsApp (con código de país)</label>
+              <input type="text" id="cms-wa-phone" class="cms-form-input" value="${waPhone}" placeholder="573226219813" />
+            </div>
+            <div class="cms-form-group" style="margin-top: 8px;">
+              <label class="cms-form-label" style="color: #128C7E;">Mensaje Predeterminado</label>
+              <textarea id="cms-wa-msg" class="cms-form-textarea" style="min-height: 60px;" placeholder="¡Hola! Quiero información sobre las pijamas de Sublimados Majestic">${escapeHtml(waMsg)}</textarea>
+            </div>
+            <button id="cms-btn-generate-wa" class="cms-btn" style="background: #25D366; color: white; margin-top: 8px; width: 100%; justify-content: center;">
+              ⚡ Aplicar a la URL
+            </button>
+          </div>
+        </div>
+        <div class="cms-modal-footer">
+          <button class="cms-btn cms-btn-cancel">Cancelar</button>
+          <button id="cms-link-save" class="cms-btn cms-btn-save">Guardar Botón</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(backdrop);
+
+    const textInput = backdrop.querySelector('#cms-link-text');
+    const hrefInput = backdrop.querySelector('#cms-link-href');
+    const phoneInput = backdrop.querySelector('#cms-wa-phone');
+    const msgInput = backdrop.querySelector('#cms-wa-msg');
+    const genWaBtn = backdrop.querySelector('#cms-btn-generate-wa');
+    const saveBtn = backdrop.querySelector('#cms-link-save');
+    const closeBtns = backdrop.querySelectorAll('.cms-modal-close, .cms-btn-cancel');
+
+    closeBtns.forEach((btn) => btn.addEventListener('click', () => backdrop.remove()));
+
+    genWaBtn.addEventListener('click', () => {
+      const phone = phoneInput.value.replace(/[^0-9]/g, '');
+      const msg = encodeURIComponent(msgInput.value.trim());
+      const generated = `https://wa.me/${phone}${msg ? '?text=' + msg : ''}`;
+      hrefInput.value = generated;
+      showToast('Enlace de WhatsApp generado en la casilla de URL', 'info');
+    });
+
+    saveBtn.addEventListener('click', () => {
+      const newText = textInput.value.trim();
+      const newHref = hrefInput.value.trim();
+
+      if (isAnchor && newHref) {
+        el.setAttribute('href', newHref);
+      }
+
+      // Si el enlace tiene un span de texto o svg, preservamos la estructura
+      const span = el.querySelector('span');
+      if (span) {
+        span.innerText = newText;
+      } else if (el.children.length === 0) {
+        el.innerText = newText;
+      } else {
+        // En caso de que contenga iconos SVG
+        const svg = el.querySelector('svg');
+        if (svg) {
+          el.innerHTML = svg.outerHTML + ' ' + newText;
+        } else {
+          el.innerText = newText;
+        }
+      }
+
+      state.hasUnsavedChanges = true;
+      backdrop.remove();
+      showToast('Botón actualizado', 'success');
+    });
+  }
+
+  // Modal 4: Editor Integral de Tarjeta de Producto
+  function openCardModal(el) {
+    const imgEl = el.querySelector('.card-gallery img') || el.querySelector('img');
+    const badgeEl = el.querySelector('.card-badge');
+    const nameEl = el.querySelector('.card-name');
+    const noteEl = el.querySelector('.card-note');
+    const ctaEl = el.querySelector('.card-cta') || el.querySelector('a');
+
+    const currentImg = imgEl ? imgEl.getAttribute('src') : '';
+    const currentBadge = badgeEl ? badgeEl.innerText.trim() : '';
+    const currentName = nameEl ? nameEl.innerText.trim() : '';
+    const currentNote = noteEl ? noteEl.innerText.trim() : '';
+    const currentHref = ctaEl ? ctaEl.getAttribute('href') : '';
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'cms-modal-backdrop active';
+    backdrop.innerHTML = `
+      <div class="cms-modal" style="max-width: 600px;">
+        <div class="cms-modal-header">
+          <h3 class="cms-modal-title">🛍️ Editar Tarjeta de Producto</h3>
+          <button class="cms-modal-close">&times;</button>
+        </div>
+        <div class="cms-modal-body">
+          <div class="cms-form-group">
+            <label class="cms-form-label">Foto del Producto</label>
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <img id="cms-card-preview" src="${currentImg}" style="width: 70px; height: 90px; object-fit: cover; border-radius: 8px; border: 1px solid #E8D5DE;" />
+              <div style="flex: 1;">
+                <input type="text" id="cms-card-img" class="cms-form-input" value="${currentImg}" placeholder="Ruta o URL de imagen" />
+                <input type="file" id="cms-card-file" accept="image/*" class="cms-form-input" style="margin-top: 6px; font-size: 12px;" />
+              </div>
+            </div>
+          </div>
+
+          <div class="cms-form-group">
+            <label class="cms-form-label">Insignia / Badge (ej: 🔥 Más vendida)</label>
+            <input type="text" id="cms-card-badge" class="cms-form-input" value="${escapeHtml(currentBadge)}" placeholder="Vacío si no lleva" />
+          </div>
+
+          <div class="cms-form-group">
+            <label class="cms-form-label">Nombre del Producto</label>
+            <input type="text" id="cms-card-name" class="cms-form-input" value="${escapeHtml(currentName)}" />
+          </div>
+
+          <div class="cms-form-group">
+            <label class="cms-form-label">Nota o Precio</label>
+            <input type="text" id="cms-card-note" class="cms-form-input" value="${escapeHtml(currentNote)}" />
+          </div>
+
+          <div class="cms-form-group">
+            <label class="cms-form-label">Enlace de Compra / WhatsApp</label>
+            <input type="text" id="cms-card-href" class="cms-form-input" value="${escapeHtml(currentHref)}" />
+          </div>
+        </div>
+        <div class="cms-modal-footer">
+          <button class="cms-btn cms-btn-cancel">Cancelar</button>
+          <button id="cms-card-save" class="cms-btn cms-btn-save">Guardar Producto</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(backdrop);
+
+    const imgInput = backdrop.querySelector('#cms-card-img');
+    const fileInput = backdrop.querySelector('#cms-card-file');
+    const preview = backdrop.querySelector('#cms-card-preview');
+    const badgeInput = backdrop.querySelector('#cms-card-badge');
+    const nameInput = backdrop.querySelector('#cms-card-name');
+    const noteInput = backdrop.querySelector('#cms-card-note');
+    const hrefInput = backdrop.querySelector('#cms-card-href');
+    const saveBtn = backdrop.querySelector('#cms-card-save');
+    const closeBtns = backdrop.querySelectorAll('.cms-modal-close, .cms-btn-cancel');
+
+    closeBtns.forEach((btn) => btn.addEventListener('click', () => backdrop.remove()));
+
+    fileInput.addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        preview.src = e.target.result;
+        imgInput.value = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    imgInput.addEventListener('input', () => {
+      preview.src = imgInput.value;
+    });
+
+    saveBtn.addEventListener('click', () => {
+      if (imgEl && imgInput.value.trim()) imgEl.src = imgInput.value.trim();
+
+      if (badgeEl) {
+        if (badgeInput.value.trim()) {
+          badgeEl.innerText = badgeInput.value.trim();
+          badgeEl.style.display = '';
+        } else {
+          badgeEl.style.display = 'none';
+        }
+      }
+
+      if (nameEl) nameEl.innerText = nameInput.value.trim();
+      if (noteEl) noteEl.innerText = noteInput.value.trim();
+
+      if (ctaEl && hrefInput.value.trim()) {
+        ctaEl.setAttribute('href', hrefInput.value.trim());
+      }
+
+      const overlay = el.querySelector('.card-img-overlay');
+      if (overlay && hrefInput.value.trim()) {
+        overlay.setAttribute('href', hrefInput.value.trim());
+      }
+
+      state.hasUnsavedChanges = true;
+      backdrop.remove();
+      showToast('Tarjeta de producto actualizada', 'success');
+    });
+  }
+
+  // Modal 5: Configuración (GitHub Token, Repositorio, PIN)
+  function openSettingsModal() {
+    const backdrop = document.createElement('div');
+    backdrop.className = 'cms-modal-backdrop active';
+    backdrop.innerHTML = `
+      <div class="cms-modal" style="max-width: 520px;">
+        <div class="cms-modal-header">
+          <h3 class="cms-modal-title">⚙️ Ajustes del CMS</h3>
+          <button class="cms-modal-close">&times;</button>
+        </div>
+        <div class="cms-modal-body">
+          <div class="cms-form-group">
+            <label class="cms-form-label">GitHub Personal Access Token (PAT)</label>
+            <input type="password" id="cms-set-token" class="cms-form-input" value="${state.config.githubToken}" placeholder="ghp_xxxxxxxxxxxx" />
+            <small class="cms-form-help">
+              Permite publicar cambios directamente al repositorio GitHub sin tocar código. Requiere permisos <code>repo</code> o <code>contents:write</code>.
+            </small>
+          </div>
+
+          <div class="cms-form-group">
+            <label class="cms-form-label">Repositorio GitHub</label>
+            <input type="text" id="cms-set-repo" class="cms-form-input" value="${state.config.githubRepo}" placeholder="usuario/repositorio" />
+          </div>
+
+          <div class="cms-form-group">
+            <label class="cms-form-label">Rama Principal</label>
+            <input type="text" id="cms-set-branch" class="cms-form-input" value="${state.config.githubBranch}" placeholder="main" />
+          </div>
+
+          <div class="cms-form-group">
+            <label class="cms-form-label">PIN de Administrador</label>
+            <input type="text" id="cms-set-pin" class="cms-form-input" value="${state.config.pin}" maxlength="8" />
+          </div>
+
+          <div style="border-top: 1px solid #E8D5DE; padding-top: 12px; margin-top: 6px;">
+            <button id="cms-btn-clear-draft" class="cms-btn" style="background: rgba(255, 107, 129, 0.15); color: #d63031; width: 100%; justify-content: center;">
+              🗑️ Descartar Borrador y Volver al Original
+            </button>
+          </div>
+        </div>
+        <div class="cms-modal-footer">
+          <button class="cms-btn cms-btn-cancel">Cancelar</button>
+          <button id="cms-set-save" class="cms-btn cms-btn-save">Guardar Configuración</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(backdrop);
+
+    const tokenInput = backdrop.querySelector('#cms-set-token');
+    const repoInput = backdrop.querySelector('#cms-set-repo');
+    const branchInput = backdrop.querySelector('#cms-set-branch');
+    const pinInput = backdrop.querySelector('#cms-set-pin');
+    const clearDraftBtn = backdrop.querySelector('#cms-btn-clear-draft');
+    const saveBtn = backdrop.querySelector('#cms-set-save');
+    const closeBtns = backdrop.querySelectorAll('.cms-modal-close, .cms-btn-cancel');
+
+    closeBtns.forEach((btn) => btn.addEventListener('click', () => backdrop.remove()));
+
+    clearDraftBtn.addEventListener('click', () => {
+      if (confirm('¿Estás seguro de descartar el borrador local? Se recargará la página original.')) {
+        localStorage.removeItem(STORAGE_KEYS.DRAFT);
+        location.reload();
+      }
+    });
+
+    saveBtn.addEventListener('click', () => {
+      state.config.githubToken = tokenInput.value.trim();
+      state.config.githubRepo = repoInput.value.trim() || 'sublimadosmajestic/landing';
+      state.config.githubBranch = branchInput.value.trim() || 'main';
+      state.config.pin = pinInput.value.trim() || '1234';
+
+      saveConfig();
+      backdrop.remove();
+      showToast('Ajustes guardados correctamente', 'success');
+    });
+  }
+
+  // Serializador de HTML Limpio (Elimina barra, modales y marcas del CMS)
+  function getCleanHtml() {
+    const clone = document.documentElement.cloneNode(true);
+
+    // Remover barra superior del CMS y modales
+    const cmsBar = clone.querySelector('#majestic-cms-bar');
+    if (cmsBar) cmsBar.remove();
+
+    const modals = clone.querySelectorAll('.cms-modal-backdrop, #cms-toast-container');
+    modals.forEach((m) => m.remove());
+
+    // Limpiar clases temporales del body
+    const body = clone.querySelector('body');
+    if (body) {
+      body.classList.remove('cms-active', 'cms-preview-mode');
+    }
+
+    return '<!DOCTYPE html>\n' + clone.outerHTML;
+  }
+
+  // Guardar borrador en LocalStorage
+  function saveDraft() {
+    try {
+      const cleanHtml = getCleanHtml();
+      localStorage.setItem(STORAGE_KEYS.DRAFT, cleanHtml);
+      state.hasUnsavedChanges = false;
+      showToast('Borrador guardado localmente', 'success');
+    } catch (e) {
+      console.error(e);
+      showToast('Error al guardar borrador (memoria llena)', 'error');
+    }
+  }
+
+  // Descargar index.html limpio
+  function downloadHtml() {
+    const cleanHtml = getCleanHtml();
+    const blob = new Blob([cleanHtml], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'index.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Archivo index.html descargado', 'success');
+  }
+
+  // Publicar directamente en GitHub Pages vía API
+  async function publishToGitHub() {
+    if (!state.config.githubToken) {
+      showToast('Falta el Token de GitHub. Ingresa a Ajustes (⚙️) para configurarlo.', 'warning', 5000);
+      openSettingsModal();
+      return;
+    }
+
+    const publishBtn = document.getElementById('cms-btn-publish');
+    const originalText = publishBtn ? publishBtn.innerHTML : '';
+    if (publishBtn) {
+      publishBtn.innerHTML = '⏳ Publicando...';
+      publishBtn.disabled = true;
+    }
+
+    showToast('Conectando con GitHub...', 'info', 2500);
+
+    try {
+      const repo = state.config.githubRepo;
+      const branch = state.config.githubBranch;
+      const token = state.config.githubToken;
+      const apiUrl = `https://api.github.com/repos/${repo}/contents/index.html`;
+
+      // 1. Obtener SHA actual del archivo index.html
+      const getRes = await fetch(`${apiUrl}?ref=${branch}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/vnd.github.v3+json'
+        }
+      });
+
+      if (!getRes.ok) {
+        throw new Error(`Error al leer archivo del repo: ${getRes.status} ${getRes.statusText}`);
+      }
+
+      const fileData = await getRes.json();
+      const currentSha = fileData.sha;
+
+      // 2. Preparar contenido limpio codificado en Base64 UTF-8
+      const cleanHtml = getCleanHtml();
+      const encodedContent = btoa(unescape(encodeURIComponent(cleanHtml)));
+
+      // 3. Hacer commit y actualizar en GitHub
+      const putRes = await fetch(apiUrl, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: 'cms: actualización de contenidos desde el editor visual',
+          content: encodedContent,
+          sha: currentSha,
+          branch: branch
+        })
+      });
+
+      if (!putRes.ok) {
+        const errJson = await putRes.json();
+        throw new Error(errJson.message || 'Error al actualizar en GitHub');
+      }
+
+      state.hasUnsavedChanges = false;
+      showToast('🎉 ¡Publicado con éxito en GitHub! Tu sitio se actualizará en ~30 segundos.', 'success', 6000);
+    } catch (err) {
+      console.error(err);
+      showToast(`Error al publicar: ${err.message}`, 'error', 6000);
+    } finally {
+      if (publishBtn) {
+        publishBtn.innerHTML = originalText;
+        publishBtn.disabled = false;
+      }
+    }
+  }
+
+  // Utilidades
+  function formatFieldName(name) {
+    return name
+      .replace(/-/g, ' ')
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (l) => l.toUpperCase());
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // Inicialización al cargar el DOM
+  function init() {
+    loadConfig();
+
+    // Comprobar atajo de teclado: Ctrl + Shift + E
+    window.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.shiftKey && (e.key === 'E' || e.key === 'e')) {
+        e.preventDefault();
+        if (state.isActive) {
+          deactivateCMS();
+        } else {
+          openLoginModal();
+        }
+      }
+    });
+
+    // Enlazar botón de footer si existe
+    const adminTrigger = document.getElementById('cms-admin-trigger');
+    if (adminTrigger) {
+      adminTrigger.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (state.isActive) {
+          deactivateCMS();
+        } else {
+          openLoginModal();
+        }
+      });
+    }
+
+    // Si ya estaba autenticado en la sesión actual
+    if (sessionStorage.getItem(STORAGE_KEYS.SESSION) === 'authenticated') {
+      activateCMS();
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
