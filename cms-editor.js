@@ -21,6 +21,12 @@
 
   // Galería de imágenes nativas del proyecto
   const DEFAULT_GALLERY = [
+    { name: 'Instagram 1 - Reel Lola Bunny', url: 'ig-post-1.jpg' },
+    { name: 'Instagram 2 - Capri Hello Kitty', url: 'ig-post-2.jpg' },
+    { name: 'Instagram 3 - Reel Familia Avengers', url: 'ig-post-3.jpg' },
+    { name: 'Instagram 4 - Frase La Felicidad en Pijama', url: 'ig-post-4.jpg' },
+    { name: 'Instagram 5 - Pantalón Niña Pingüino', url: 'ig-post-5.jpg' },
+    { name: 'Instagram 6 - Reel Top Gatitos Tienda', url: 'ig-post-6.jpg' },
     { name: 'Banner Navidad', url: 'header-banner-navidad.jpg' },
     { name: 'Banner Principal', url: 'header-banner.png' },
     { name: 'Pijama Familia Catálogo', url: 'pijamas-familia-catalogo.png' },
