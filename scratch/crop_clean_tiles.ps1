@@ -3,7 +3,10 @@ Add-Type -AssemblyName System.Drawing
 $srcPath = "C:\Users\Auxiliar\.gemini\antigravity-ide\brain\d8d76cae-14d7-439b-926e-130f49e44cb5\.user_uploaded\media_1789598772004.jpg"
 $destDir = "c:\Users\Auxiliar\OneDrive\Desktop\indisutex webs\Landing majestic"
 
-$src = [System.Drawing.Bitmap]::FromFile($srcPath)
+# Read bytes into memory stream to prevent file lock
+$bytes = [System.IO.File]::ReadAllBytes($srcPath)
+$ms = New-Object System.IO.MemoryStream($bytes, $false)
+$src = [System.Drawing.Bitmap]::FromStream($ms)
 
 $boxes = @(
     @{ Name = "ig-post-1.jpg"; X = 0;   Y = 6;   W = 326; H = 388 },
@@ -15,6 +18,11 @@ $boxes = @(
 )
 
 foreach ($b in $boxes) {
+    $outFile = Join-Path $destDir $b.Name
+    if (Test-Path $outFile) {
+        Remove-Item $outFile -Force -ErrorAction SilentlyContinue
+    }
+
     $rect = New-Object System.Drawing.Rectangle($b.X, $b.Y, $b.W, $b.H)
     $tile = New-Object System.Drawing.Bitmap($b.W, $b.H)
     $g = [System.Drawing.Graphics]::FromImage($tile)
@@ -26,12 +34,12 @@ foreach ($b in $boxes) {
     $g.DrawImage($src, $destRect, $rect, [System.Drawing.GraphicsUnit]::Pixel)
     $g.Dispose()
     
-    $outFile = Join-Path $destDir $b.Name
     $tile.Save($outFile, [System.Drawing.Imaging.ImageFormat]::Jpeg)
     $tile.Dispose()
     
-    Write-Host "Extracted clean tile: $($b.Name) [X=$($b.X), Y=$($b.Y), W=$($b.W), H=$($b.H)]"
+    Write-Host "Successfully saved: $($b.Name)"
 }
 
 $src.Dispose()
-Write-Host "All 6 clean tiles extracted successfully!"
+$ms.Dispose()
+Write-Host "All 6 clean tiles extracted without errors!"
