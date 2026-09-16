@@ -222,6 +222,7 @@
     if (bar) bar.classList.add('active');
     document.body.classList.add('cms-active');
     state.isActive = true;
+    ensureAddProductCard();
     scanEditableElements();
   }
 
@@ -239,6 +240,7 @@
 
   // Escanear elementos editables
   function scanEditableElements() {
+    ensureAddProductCard();
     const elements = document.querySelectorAll('[data-cms]');
     elements.forEach((el) => {
       if (el._cmsBound) return;
@@ -598,6 +600,15 @@
           <div class="cms-form-group">
             <label class="cms-form-label">Insignia / Badge (ej: 🔥 Más vendida)</label>
             <input type="text" id="cms-card-badge" class="cms-form-input" value="${escapeHtml(currentBadge)}" placeholder="Vacío si no lleva" />
+            <div class="cms-badge-chips">
+              <span class="cms-chip" data-badge="✨ Nueva Colección">✨ Nueva Colección</span>
+              <span class="cms-chip" data-badge="🔥 Más vendida">🔥 Más vendida</span>
+              <span class="cms-chip" data-badge="💫 Bestseller">💫 Bestseller</span>
+              <span class="cms-chip" data-badge="🎁 Top regalo">🎁 Top regalo</span>
+              <span class="cms-chip" data-badge="⭐ Esencial">⭐ Esencial</span>
+              <span class="cms-chip" data-badge="🔥 Tendencia">🔥 Tendencia</span>
+              <span class="cms-chip" data-badge="">(Sin insignia)</span>
+            </div>
           </div>
 
           <div class="cms-form-group">
@@ -615,9 +626,14 @@
             <input type="text" id="cms-card-href" class="cms-form-input" value="${escapeHtml(currentHref)}" />
           </div>
         </div>
-        <div class="cms-modal-footer">
-          <button class="cms-btn cms-btn-cancel">Cancelar</button>
-          <button id="cms-card-save" class="cms-btn cms-btn-save">Guardar Producto</button>
+        <div class="cms-modal-footer" style="justify-content: space-between;">
+          <button id="cms-card-delete" type="button" class="cms-btn" style="background: rgba(255, 59, 48, 0.12); color: #FF3B30; border: 1px solid rgba(255, 59, 48, 0.3);">
+            🗑️ Eliminar Producto
+          </button>
+          <div style="display: flex; gap: 10px;">
+            <button class="cms-btn cms-btn-cancel">Cancelar</button>
+            <button id="cms-card-save" class="cms-btn cms-btn-save">Guardar Cambios</button>
+          </div>
         </div>
       </div>
     `;
@@ -630,10 +646,19 @@
     const nameInput = backdrop.querySelector('#cms-card-name');
     const noteInput = backdrop.querySelector('#cms-card-note');
     const hrefInput = backdrop.querySelector('#cms-card-href');
+    const deleteBtn = backdrop.querySelector('#cms-card-delete');
     const saveBtn = backdrop.querySelector('#cms-card-save');
     const closeBtns = backdrop.querySelectorAll('.cms-modal-close, .cms-btn-cancel');
 
     closeBtns.forEach((btn) => btn.addEventListener('click', () => backdrop.remove()));
+
+    // Chips de insignias rápidas
+    const chips = backdrop.querySelectorAll('.cms-chip');
+    chips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        badgeInput.value = chip.getAttribute('data-badge');
+      });
+    });
 
     fileInput.addEventListener('change', function () {
       const file = this.files[0];
@@ -650,15 +675,35 @@
       preview.src = imgInput.value;
     });
 
+    deleteBtn.addEventListener('click', () => {
+      const title = currentName || 'este producto';
+      if (confirm(`¿Estás seguro de que deseas eliminar "${title}" de la colección?`)) {
+        el.remove();
+        state.hasUnsavedChanges = true;
+        backdrop.remove();
+        ensureAddProductCard();
+        showToast('Producto eliminado de la colección', 'warning');
+      }
+    });
+
     saveBtn.addEventListener('click', () => {
       if (imgEl && imgInput.value.trim()) imgEl.src = imgInput.value.trim();
 
+      const badgeVal = badgeInput.value.trim();
       if (badgeEl) {
-        if (badgeInput.value.trim()) {
-          badgeEl.innerText = badgeInput.value.trim();
+        if (badgeVal) {
+          badgeEl.innerText = badgeVal;
           badgeEl.style.display = '';
         } else {
           badgeEl.style.display = 'none';
+        }
+      } else if (badgeVal) {
+        const gallery = el.querySelector('.card-gallery');
+        if (gallery) {
+          const newBadge = document.createElement('span');
+          newBadge.className = 'card-badge';
+          newBadge.innerText = badgeVal;
+          gallery.prepend(newBadge);
         }
       }
 
@@ -677,6 +722,274 @@
       state.hasUnsavedChanges = true;
       backdrop.remove();
       showToast('Tarjeta de producto actualizada', 'success');
+    });
+  }
+
+  // Asegura que la tarjeta de "+ Añadir Producto" exista en el DOM y esté enlazada
+  function ensureAddProductCard() {
+    const grid = document.querySelector('.product-grid');
+    if (!grid) return;
+
+    let trigger = document.getElementById('cms-add-product-trigger');
+    if (!trigger) {
+      trigger = document.createElement('div');
+      trigger.className = 'cms-add-product-card';
+      trigger.id = 'cms-add-product-trigger';
+      trigger.setAttribute('role', 'button');
+      trigger.setAttribute('tabindex', '0');
+      trigger.setAttribute('title', 'Añadir nueva pijama a la colección');
+      trigger.innerHTML = `
+        <div class="cms-add-card-inner">
+          <div class="cms-add-icon-circle">
+            <svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor">
+              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
+          </div>
+          <div class="cms-add-card-title">Añadir Nueva Pijama</div>
+          <div class="cms-add-card-desc">Suma un nuevo diseño a la colección sin alterar la estructura</div>
+          <span class="cms-add-card-btn">
+            <span>+</span> Agregar Producto
+          </span>
+        </div>
+      `;
+      grid.appendChild(trigger);
+    } else {
+      // Asegurarse de que esté siempre al final de la cuadrícula
+      if (grid.lastElementChild !== trigger) {
+        grid.appendChild(trigger);
+      }
+    }
+
+    if (!trigger._cmsBound) {
+      trigger._cmsBound = true;
+      trigger.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!state.isActive || state.isPreview) return;
+        openNewProductModal();
+      });
+    }
+  }
+
+  // Modal para agregar una nueva pijama a la colección
+  function openNewProductModal() {
+    const backdrop = document.createElement('div');
+    backdrop.className = 'cms-modal-backdrop active';
+
+    // Miniaturas de la galería para elegir rápidamente
+    let galleryHtml = '';
+    DEFAULT_GALLERY.forEach((item, idx) => {
+      const isSelected = idx === 0 ? 'selected' : '';
+      galleryHtml += `
+        <div class="cms-gallery-item ${isSelected}" data-img-url="${item.url}" title="${item.name}">
+          <img src="${item.url}" alt="${item.name}" loading="lazy" />
+          <span class="cms-gallery-label">${item.name}</span>
+        </div>
+      `;
+    });
+
+    const defaultImg = DEFAULT_GALLERY[0] ? DEFAULT_GALLERY[0].url : 'pantalon-camisa-familia.jpg';
+
+    backdrop.innerHTML = `
+      <div class="cms-modal" style="max-width: 620px;">
+        <div class="cms-modal-header">
+          <h3 class="cms-modal-title">✨ Añadir Nueva Pijama a la Colección</h3>
+          <button class="cms-modal-close">&times;</button>
+        </div>
+        <div class="cms-modal-body">
+          <p style="margin: 0; font-size: 13px; color: #7A5060;">
+            Completa los datos para crear una nueva tarjeta en la cuadrícula. Se ubicará en orden y mantendrá la estructura intacta.
+          </p>
+
+          <div class="cms-form-group">
+            <label class="cms-form-label">1. Foto de la Pijama</label>
+            <div style="display: flex; gap: 14px; align-items: center; margin-bottom: 8px;">
+              <img id="cms-new-img-preview" src="${defaultImg}" style="width: 75px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid var(--cms-primary); box-shadow: 0 4px 12px rgba(232,23,122,0.2);" />
+              <div style="flex: 1;">
+                <input type="text" id="cms-new-img-url" class="cms-form-input" value="${defaultImg}" placeholder="Ruta de imagen o URL" />
+                <label style="display: inline-block; margin-top: 6px; font-size: 11px; font-weight: 700; color: #7A5060;">O sube una foto desde tu dispositivo:</label>
+                <input type="file" id="cms-new-img-file" accept="image/*" class="cms-form-input" style="font-size: 11px; padding: 6px 10px;" />
+              </div>
+            </div>
+
+            <label class="cms-form-label" style="font-size: 11px; margin-top: 4px;">O selecciona de la galería existente:</label>
+            <div class="cms-gallery-grid" id="cms-new-gallery-grid" style="max-height: 140px;">
+              ${galleryHtml}
+            </div>
+          </div>
+
+          <div class="cms-form-group">
+            <label class="cms-form-label">2. Insignia / Distintivo (Opcional)</label>
+            <input type="text" id="cms-new-card-badge" class="cms-form-input" placeholder="Ej: 🔥 Tendencia, ✨ Nueva Colección..." value="✨ Nueva Colección" />
+            <div class="cms-badge-chips">
+              <span class="cms-chip" data-badge="✨ Nueva Colección">✨ Nueva Colección</span>
+              <span class="cms-chip" data-badge="🔥 Más vendida">🔥 Más vendida</span>
+              <span class="cms-chip" data-badge="💫 Bestseller">💫 Bestseller</span>
+              <span class="cms-chip" data-badge="🎁 Top regalo">🎁 Top regalo</span>
+              <span class="cms-chip" data-badge="⭐ Esencial">⭐ Esencial</span>
+              <span class="cms-chip" data-badge="🔥 Tendencia">🔥 Tendencia</span>
+              <span class="cms-chip" data-badge="">(Sin insignia)</span>
+            </div>
+          </div>
+
+          <div class="cms-form-group">
+            <label class="cms-form-label">3. Nombre de la Pijama</label>
+            <input type="text" id="cms-new-card-name" class="cms-form-input" placeholder="Ej: Pijama Lolita Velvet 3 Piezas" />
+          </div>
+
+          <div class="cms-form-group">
+            <label class="cms-form-label">4. Nota o Precio</label>
+            <input type="text" id="cms-new-card-note" class="cms-form-input" value="💬 Consultar precio por WhatsApp" placeholder="Ej: 💬 Consultar precio por WhatsApp o $45.000" />
+          </div>
+
+          <div class="cms-form-group">
+            <label class="cms-form-label">5. Enlace del Botón (Catálogo o WhatsApp)</label>
+            <input type="text" id="cms-new-card-href" class="cms-form-input" value="https://pijamasalmayor.com/sublimados_majestic" />
+          </div>
+
+          <div style="background: #E8F8EE; border: 1.5px solid #25D366; padding: 12px 14px; border-radius: 12px;">
+            <h4 style="margin: 0 0 6px 0; color: #128C7E; font-size: 12.5px; font-weight: 800; display: flex; align-items: center; gap: 6px;">
+              <span>📲</span> Generar enlace directo a WhatsApp para este producto
+            </h4>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="cms-new-wa-phone" class="cms-form-input" value="573226219813" style="width: 140px; font-size: 12px;" placeholder="573226219813" />
+              <button type="button" id="cms-new-btn-apply-wa" class="cms-btn" style="background: #25D366; color: white; flex: 1; justify-content: center; font-size: 11.5px;">
+                ⚡ Aplicar WhatsApp al enlace
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="cms-modal-footer">
+          <button class="cms-btn cms-btn-cancel">Cancelar</button>
+          <button id="cms-new-card-save" class="cms-btn cms-btn-save">✨ Agregar Producto a la Colección</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(backdrop);
+
+    const imgPreview = backdrop.querySelector('#cms-new-img-preview');
+    const imgUrlInput = backdrop.querySelector('#cms-new-img-url');
+    const fileInput = backdrop.querySelector('#cms-new-img-file');
+    const galleryItems = backdrop.querySelectorAll('#cms-new-gallery-grid .cms-gallery-item');
+    const badgeInput = backdrop.querySelector('#cms-new-card-badge');
+    const nameInput = backdrop.querySelector('#cms-new-card-name');
+    const noteInput = backdrop.querySelector('#cms-new-card-note');
+    const hrefInput = backdrop.querySelector('#cms-new-card-href');
+    const waPhoneInput = backdrop.querySelector('#cms-new-wa-phone');
+    const applyWaBtn = backdrop.querySelector('#cms-new-btn-apply-wa');
+    const saveBtn = backdrop.querySelector('#cms-new-card-save');
+    const closeBtns = backdrop.querySelectorAll('.cms-modal-close, .cms-btn-cancel');
+
+    closeBtns.forEach((btn) => btn.addEventListener('click', () => backdrop.remove()));
+
+    // Selección de galería
+    galleryItems.forEach((item) => {
+      item.addEventListener('click', () => {
+        galleryItems.forEach((i) => i.classList.remove('selected'));
+        item.classList.add('selected');
+        const url = item.getAttribute('data-img-url');
+        imgUrlInput.value = url;
+        imgPreview.src = url;
+      });
+    });
+
+    // Subida de imagen desde archivo
+    fileInput.addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        imgPreview.src = e.target.result;
+        imgUrlInput.value = e.target.result;
+        galleryItems.forEach((i) => i.classList.remove('selected'));
+      };
+      reader.readAsDataURL(file);
+    });
+
+    imgUrlInput.addEventListener('input', () => {
+      imgPreview.src = imgUrlInput.value;
+    });
+
+    // Chips de insignias rápidas
+    const chips = backdrop.querySelectorAll('.cms-chip');
+    chips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        badgeInput.value = chip.getAttribute('data-badge');
+      });
+    });
+
+    // Generador WhatsApp
+    applyWaBtn.addEventListener('click', () => {
+      const phone = waPhoneInput.value.replace(/[^0-9]/g, '') || '573226219813';
+      const productName = nameInput.value.trim() || 'esta pijama';
+      const msg = encodeURIComponent(`¡Hola Sublimados Majestic! Quiero consultar precio al por mayor y disponibilidad de: ${productName}`);
+      hrefInput.value = `https://wa.me/${phone}?text=${msg}`;
+      showToast('Enlace de WhatsApp asignado a la casilla de URL', 'info');
+    });
+
+    // Guardar nuevo producto
+    saveBtn.addEventListener('click', () => {
+      const name = nameInput.value.trim() || 'Nueva Pijama Majestic';
+      const imgSrc = imgUrlInput.value.trim() || defaultImg;
+      const badge = badgeInput.value.trim();
+      const note = noteInput.value.trim() || '💬 Consultar precio por WhatsApp';
+      const href = hrefInput.value.trim() || 'https://pijamasalmayor.com/sublimados_majestic';
+
+      const grid = document.querySelector('.product-grid');
+      if (!grid) {
+        showToast('No se encontró el contenedor de la colección', 'error');
+        return;
+      }
+
+      const cardId = `product-card-${Date.now()}`;
+      const badgeHtml = badge ? `\n          <span class="card-badge">${escapeHtml(badge)}</span>` : '';
+
+      const cardMarkup = `
+      <div class="product-card" data-cms="${cardId}" data-cms-type="card">
+        <div class="card-gallery">
+          <img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(name)}" loading="lazy">${badgeHtml}
+          <a href="${escapeHtml(href)}" target="_blank" rel="noopener" class="card-img-overlay" aria-label="Ver Catálogo Digital">
+            <span class="card-img-overlay-btn"><svg viewBox="0 0 24 24"><path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12zm-7-8c-1.66 0-3-1.34-3-3H7c0 2.76 2.24 5 5 5s5-2.24 5-5h-2c0 1.66-1.34 3-3 3z"></path></svg> Ver en Catálogo Digital</span>
+          </a>
+        </div>
+        <div class="card-body">
+          <div class="card-name">${escapeHtml(name)}</div>
+          <div class="card-note">${escapeHtml(note)}</div>
+          <a href="${escapeHtml(href)}" target="_blank" rel="noopener" class="card-cta"><svg viewBox="0 0 24 24"><path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12zm-7-8c-1.66 0-3-1.34-3-3H7c0 2.76 2.24 5 5 5s5-2.24 5-5h-2c0 1.66-1.34 3-3 3z"></path></svg> Ver en Catálogo Digital</a>
+        </div>
+      </div>
+      `.trim();
+
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = cardMarkup;
+      const newCard = tempDiv.firstElementChild;
+
+      const addCardTrigger = grid.querySelector('#cms-add-product-trigger');
+      if (addCardTrigger) {
+        grid.insertBefore(newCard, addCardTrigger);
+      } else {
+        grid.appendChild(newCard);
+      }
+
+      // Volver a asegurar que el botón + siga al final y escanear
+      ensureAddProductCard();
+      scanEditableElements();
+
+      state.hasUnsavedChanges = true;
+      backdrop.remove();
+      showToast(`¡"${name}" añadida con éxito a la colección!`, 'success', 4500);
+
+      // Desplazamiento suave y efecto de foco en la nueva tarjeta
+      setTimeout(() => {
+        newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        newCard.style.transition = 'box-shadow 0.4s ease, transform 0.4s ease';
+        newCard.style.outline = '3px solid var(--cms-primary)';
+        newCard.style.boxShadow = '0 0 24px rgba(232, 23, 122, 0.5)';
+        setTimeout(() => {
+          newCard.style.outline = '';
+          newCard.style.boxShadow = '';
+        }, 2200);
+      }, 300);
     });
   }
 
@@ -774,6 +1087,13 @@
     if (body) {
       body.classList.remove('cms-active', 'cms-preview-mode');
     }
+
+    // Limpiar estilos temporales inline en tarjetas
+    clone.querySelectorAll('.product-card').forEach((c) => {
+      c.style.boxShadow = '';
+      c.style.outline = '';
+      c.style.transition = '';
+    });
 
     return '<!DOCTYPE html>\n' + clone.outerHTML;
   }

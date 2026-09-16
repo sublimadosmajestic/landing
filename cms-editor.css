@@ -610,3 +610,133 @@ body.cms-active:not(.cms-preview-mode) [data-cms]:hover::after {
     padding-bottom: 2px;
   }
 }
+
+/* 6. AÑADIR PRODUCTO CARD (+ EN LA COLECCIÓN) */
+.cms-add-product-card {
+  display: none !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 420px;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FDF5F8 100%);
+  border: 2px dashed rgba(232, 23, 122, 0.45);
+  border-radius: var(--radius, 14px);
+  padding: 32px 20px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+
+body.cms-active:not(.cms-preview-mode) .cms-add-product-card {
+  display: flex !important;
+}
+
+.cms-add-product-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--cms-primary);
+  border-style: solid;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FCEAF1 100%);
+  box-shadow: 0 12px 30px rgba(232, 23, 122, 0.22);
+}
+
+.cms-add-card-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 220px;
+}
+
+.cms-add-icon-circle {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(232, 23, 122, 0.12) 0%, rgba(255, 30, 138, 0.2) 100%);
+  color: var(--cms-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed rgba(232, 23, 122, 0.5);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 14px rgba(232, 23, 122, 0.15);
+}
+
+.cms-add-product-card:hover .cms-add-icon-circle {
+  transform: scale(1.12) rotate(90deg);
+  background: linear-gradient(135deg, var(--cms-primary) 0%, var(--cms-primary-dark) 100%);
+  color: #FFFFFF;
+  border: 2px solid transparent;
+  box-shadow: 0 8px 24px rgba(232, 23, 122, 0.45);
+}
+
+.cms-add-card-title {
+  font-family: var(--cms-font-title);
+  font-size: 18px;
+  font-weight: 800;
+  color: #2C1A22;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.cms-add-card-desc {
+  font-family: var(--cms-font);
+  font-size: 12.5px;
+  color: #7A5060;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.cms-add-card-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: linear-gradient(135deg, var(--cms-primary) 0%, var(--cms-primary-dark) 100%);
+  color: #FFFFFF;
+  font-family: var(--cms-font);
+  font-size: 12.5px;
+  font-weight: 800;
+  padding: 9px 18px;
+  border-radius: 100px;
+  box-shadow: 0 4px 14px rgba(232, 23, 122, 0.3);
+  transition: all 0.2s ease;
+  margin-top: 4px;
+}
+
+.cms-add-product-card:hover .cms-add-card-btn {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(232, 23, 122, 0.55);
+}
+
+/* Quick Badge Chips */
+.cms-badge-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.cms-chip {
+  background: #FAF3F6;
+  border: 1px solid #E8D5DE;
+  color: #7A5060;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  user-select: none;
+}
+
+.cms-chip:hover {
+  background: var(--cms-primary);
+  color: #FFFFFF;
+  border-color: var(--cms-primary);
+  transform: translateY(-1px);
+}
+
