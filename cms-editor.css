@@ -54,11 +54,15 @@ body.cms-active {
 }
 
 body.cms-active .ticker-bar {
+  position: sticky !important;
   top: 56px !important;
+  z-index: 100 !important;
 }
 
 body.cms-active .navbar {
+  position: sticky !important;
   top: 94px !important;
+  z-index: 99 !important;
 }
 
 /* Brand & Status */
@@ -215,20 +219,26 @@ body.cms-active .navbar {
   color: #ff8597;
 }
 
-/* 2. EDITABLE ELEMENTS VISUAL FEEDBACK */
+/* 2. EDITABLE ELEMENTS VISUAL FEEDBACK (SOLO AL PASAR EL MOUSE / ON HOVER) */
 body.cms-active:not(.cms-preview-mode) [data-cms] {
-  position: relative !important;
   cursor: pointer !important;
-  outline: 2px dashed rgba(232, 23, 122, 0.55) !important;
-  outline-offset: 3px !important;
-  border-radius: 6px !important;
-  transition: outline-color 0.2s ease, box-shadow 0.2s ease !important;
+  transition: outline 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+body.cms-active:not(.cms-preview-mode) [data-cms]:not(.ticker-bar):hover {
+  position: relative !important;
 }
 
 body.cms-active:not(.cms-preview-mode) [data-cms]:hover {
-  outline: 2px solid var(--cms-primary) !important;
+  outline: 2px dashed var(--cms-primary) !important;
   outline-offset: 4px !important;
-  box-shadow: 0 0 16px rgba(232, 23, 122, 0.35) !important;
+  box-shadow: 0 0 14px rgba(232, 23, 122, 0.4) !important;
+  border-radius: 6px !important;
+}
+
+body.cms-active:not(.cms-preview-mode) .ticker-bar:hover {
+  outline: 2px dashed rgba(255, 255, 255, 0.8) !important;
+  outline-offset: -2px !important;
 }
 
 /* Edit Floating Badge Indicator */
